@@ -1,0 +1,13 @@
+1D monte carlo code with point depletion code
+
+Goal - simulate 1g monte carlo transport. 
+
+Perform CELI-SI scheme.
+
+Compute covariance
+
+Use Regression methods to reduce variance.
+
+See:
+Book: Monte Carlo Methods by J. M. Hammersley & D. C. Handscomb
+PhD: ROBUST MONTE CARLO METHODS FOR LIGHT TRANSPORT SIMULATION (Stanford PhD)
