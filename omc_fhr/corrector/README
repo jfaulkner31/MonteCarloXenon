@@ -1,0 +1,27 @@
+# corrector calculation.
+
+# first take predictor values from:
+# PREDICTOR/step_19_ALL/combined_pred.inp
+# pred_P = np.array([8.10455956,10.6064514,12.40449474,13.3231417,13.713228,13.85547537,13.86836539,13.86828702,13.89530106,13.93247775,13.91676547,13.75879233,13.35664288,12.41803789,10.61241791,8.09475612])
+
+# Then take new values of power from openmc calculation:
+# with open('data_step0.pkl', 'rb') as f:
+#   res0 = pkl.load(f)
+# p0_tot = np.zeros(16)
+# for key in res0.keys():
+#   p0_tot += res0[key]
+# p0_tot = p0_tot / p0_tot.sum() * pred_P_sum
+# plt.plot(p0_tot)
+
+# for idx in range(16):
+#   vec = np.linspace(pred_P[idx], p0_tot[idx], 11)
+#   print("power=", vec[1:]/2 + vec[0:-1]/2)
+
+
+# Then average them and print them (above) and put them in corrector.inp
+# in corrector.inp, xs are from the scale calc (minimal err): file="/home/jonathon/projects/MonteCarloXenon/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_115/0.5.f33"
+# then the starting comp is from: load{ file="/home/jonathon/projects/MonteCarloXenon/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_115/115.f71" pos=1 }
+# Then the ending comp is stored in step1_comps
+
+# Then run toComps.sh and convert all the ending comps into stdcmp files.
+

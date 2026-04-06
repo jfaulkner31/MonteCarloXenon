@@ -1,0 +1,16 @@
+bash toComps.sh 101 900.0 101.f71 addnux4Dict.dict StdCmpMix101_ 700 obiwan
+bash toComps.sh 102 900.0 101.f71 addnux4Dict.dict StdCmpMix102_ 700 obiwan
+bash toComps.sh 103 900.0 101.f71 addnux4Dict.dict StdCmpMix103_ 700 obiwan
+bash toComps.sh 104 900.0 101.f71 addnux4Dict.dict StdCmpMix104_ 700 obiwan
+bash toComps.sh 105 900.0 101.f71 addnux4Dict.dict StdCmpMix105_ 700 obiwan
+bash toComps.sh 106 900.0 101.f71 addnux4Dict.dict StdCmpMix106_ 700 obiwan
+bash toComps.sh 107 900.0 101.f71 addnux4Dict.dict StdCmpMix107_ 700 obiwan
+bash toComps.sh 108 900.0 101.f71 addnux4Dict.dict StdCmpMix108_ 700 obiwan
+bash toComps.sh 109 900.0 101.f71 addnux4Dict.dict StdCmpMix109_ 700 obiwan
+bash toComps.sh 110 900.0 101.f71 addnux4Dict.dict StdCmpMix110_ 700 obiwan
+bash toComps.sh 111 900.0 101.f71 addnux4Dict.dict StdCmpMix111_ 700 obiwan
+bash toComps.sh 112 900.0 101.f71 addnux4Dict.dict StdCmpMix112_ 700 obiwan
+bash toComps.sh 113 900.0 101.f71 addnux4Dict.dict StdCmpMix113_ 700 obiwan
+bash toComps.sh 114 900.0 101.f71 addnux4Dict.dict StdCmpMix114_ 700 obiwan
+bash toComps.sh 115 900.0 101.f71 addnux4Dict.dict StdCmpMix115_ 700 obiwan
+bash toComps.sh 116 900.0 101.f71 addnux4Dict.dict StdCmpMix116_ 700 obiwan

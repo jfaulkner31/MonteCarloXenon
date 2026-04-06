@@ -1,0 +1,22 @@
+=origen
+solver{type=CRAM}
+case{
+  title="fid=113 step=19__idx=0"
+  lib{
+    file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/CORRECTOR/step_19_iterNum_0_fid_113/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+  power=[13.404550799999999, 13.3886344, 13.372717999999999, 13.3568016, 13.340885199999999, 13.3249688, 13.309052399999999, 13.293136, 13.277219599999999, 13.2613032] % MW
+  mat{
+    load{ file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/BLENDER/step_19_iterNum_3_fid_113/113.f71" pos=1 }
+  }
+  save{ file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/CORRECTOR/step_19_iterNum_0_fid_113/113.f71"
+    steps=[LAST]
+  }
+}
+end

@@ -1,0 +1,399 @@
+=origen
+solver{type=CRAM}
+case{
+  title="fid=101 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_101/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175, 7.922125332755175] % 0
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_101/101.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/101.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=102 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_102/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237, 10.31195456090237] % 1
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_102/102.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/102.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=103 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_103/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839, 11.952935809886839] % 2
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_103/103.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/103.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=104 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_104/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115, 12.801177412725115] % 3
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_104/104.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/104.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=105 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_105/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855, 13.171265019946855] % 4
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_105/105.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/105.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=106 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_106/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048, 13.380344776467048] % 5
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_106/106.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/106.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=107 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_107/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476, 13.563647936529476] % 6
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_107/107.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/107.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=108 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_108/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684, 13.69353476591684] % 7
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_108/108.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/108.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=109 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_109/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358, 13.85814011859358] % 8
+
+ mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_109/109.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/109.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=110 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_110/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408, 14.094335374357408] % 9
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_110/110.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/110.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=111 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_111/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667, 14.168857066253667] % 10
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_111/111.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/111.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=112 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_112/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005, 14.202319022339005] % 11
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_112/112.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/112.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=113 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_113/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364, 13.838067074588364] % 12
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_113/113.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/113.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=114 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_114/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128, 12.987826499872128] % 13
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_114/114.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/114.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=115 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_115/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953, 11.194173966301953] % 14
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_115/115.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/115.f71"
+    steps=[LAST]
+  }
+}
+end
+
+
+=origen
+solver{type=CRAM}
+case{
+  title="fid=116 step=19__idx=0"
+  lib{
+    file="/home/fauljona/ondemand/omc_fhr/corrector/f33_step0/step_19_iterNum_0_fid_116/0.5.f33"
+    pos=1
+  }
+  time{
+    units=DAYS
+    start=0
+    t=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+  }
+power= [8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159, 8.588489852564159] % 15
+
+  mat{
+    load{ file="/home/fauljona/ondemand/omc_fhr/corrector/blender_iter3/step_19_iterNum_3_fid_116/116.f71" pos=1 }
+  }
+  save{file="/home/fauljona/ondemand/omc_fhr/corrector/step1_comps/116.f71"
+    steps=[LAST]
+  }
+}
+end
+

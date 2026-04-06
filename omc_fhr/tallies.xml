@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tallies>
+  <filter id="1" type="cell">
+    <bins>101</bins>
+  </filter>
+  <filter id="2" type="cell">
+    <bins>102</bins>
+  </filter>
+  <filter id="3" type="cell">
+    <bins>103</bins>
+  </filter>
+  <filter id="4" type="cell">
+    <bins>104</bins>
+  </filter>
+  <filter id="5" type="cell">
+    <bins>105</bins>
+  </filter>
+  <filter id="6" type="cell">
+    <bins>106</bins>
+  </filter>
+  <filter id="7" type="cell">
+    <bins>107</bins>
+  </filter>
+  <filter id="8" type="cell">
+    <bins>108</bins>
+  </filter>
+  <filter id="9" type="cell">
+    <bins>109</bins>
+  </filter>
+  <filter id="10" type="cell">
+    <bins>110</bins>
+  </filter>
+  <filter id="11" type="cell">
+    <bins>111</bins>
+  </filter>
+  <filter id="12" type="cell">
+    <bins>112</bins>
+  </filter>
+  <filter id="13" type="cell">
+    <bins>113</bins>
+  </filter>
+  <filter id="14" type="cell">
+    <bins>114</bins>
+  </filter>
+  <filter id="15" type="cell">
+    <bins>115</bins>
+  </filter>
+  <filter id="16" type="cell">
+    <bins>116</bins>
+  </filter>
+  <tally id="101" name="flux101">
+    <filters>1</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="102" name="flux102">
+    <filters>2</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="103" name="flux103">
+    <filters>3</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="104" name="flux104">
+    <filters>4</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="105" name="flux105">
+    <filters>5</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="106" name="flux106">
+    <filters>6</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="107" name="flux107">
+    <filters>7</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="108" name="flux108">
+    <filters>8</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="109" name="flux109">
+    <filters>9</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="110" name="flux110">
+    <filters>10</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="111" name="flux111">
+    <filters>11</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="112" name="flux112">
+    <filters>12</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="113" name="flux113">
+    <filters>13</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="114" name="flux114">
+    <filters>14</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="115" name="flux115">
+    <filters>15</filters>
+    <scores>heating-local</scores>
+  </tally>
+  <tally id="116" name="flux116">
+    <filters>16</filters>
+    <scores>heating-local</scores>
+  </tally>
+</tallies>

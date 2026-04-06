@@ -1,0 +1,17 @@
+=origen
+case(old){
+  lib{file="end7dec" pos=1}
+  time{ units=SECONDS t=[1e-20] }
+  mat{ load{ file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/BLENDER/step_19_iterNum_2_fid_108/108.f71" pos=1 } }
+}
+case(new){
+  lib{file="end7dec" pos=1}
+  time{ units=SECONDS t=[1e-20] }
+  mat{ load{ file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/CORRECTOR/step_18_iterNum_3_fid_108/108.f71" pos=1 } }
+}
+case(blend){
+  time{ units=SECONDS t=[1e-20] }
+  mat{ blend=[ old=0.5 new=0.5 ] }
+  save{ file="/ibmstor/scratch/fauljona/fhr_comp_effort/i3_p2_d2/BLENDER/step_19_iterNum_3_fid_108/108.f71" steps=[LAST] }
+}
+end
