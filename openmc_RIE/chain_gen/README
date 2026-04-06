@@ -1,0 +1,7 @@
+We want to generate a cross section file for use in depletion. To make this easier, we deplete a fuel pin (16 zones) to 20 days.
+
+The pin we use in follow-up calculations is simply the cross section file at t=0. 
+
+Files in chain_gen are those used to generate this xs file.
+
+Make this scheme into a class-like approach so that we can run a lot of simulations :))

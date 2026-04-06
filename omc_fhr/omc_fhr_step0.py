@@ -1,7 +1,7 @@
 import openmc
 import matplotlib.pyplot as plt
 import numpy as np
-openmc.Materials.cross_sections = '/home/jonathon/openmc_xs/endfb-vii.1-hdf5/cross_sections.xml'
+#openmc.Materials.cross_sections = '/home/jonathon/openmc_xs/endfb-vii.1-hdf5/cross_sections.xml'
 
 def mat_from_stdcmp(mat: openmc.Material, file: str):
   """fills a material from stdcmp"""
@@ -13,8 +13,10 @@ def mat_from_stdcmp(mat: openmc.Material, file: str):
       nuc = nuc.split('-')[0] + nuc.split('-')[1]
       nuc = nuc.capitalize()
       if nuc[-1] == 'm':
-        continue
-      if (nuc == 'C12') | (nuc == 'C13'):
+        nuc = nuc[0:-1] + "_m1"
+      if (nuc == 'C12'):
+        nuc = 'C0'
+      if (nuc == 'C13'):
         nuc = 'C0'
       val = float(splitted[3])
       mat.add_nuclide(nuclide=nuc, percent=val, percent_type='ao')
@@ -39,7 +41,7 @@ f115 = openmc.Material(material_id=115, name='f115', temperature=900.0)
 f116 = openmc.Material(material_id=116, name='f116', temperature=900.0)
 mats_list = [f101,f102,f103,f104,f105,f106,f107,f108,f109,f110,f111,f112,f113,f114,f115,f116]
 for mat in mats_list:
-  mat_from_stdcmp(mat=mat, file=f"i3_p2_d2_triton_run_step_20_iter_0/StdCmpMix{mat.id}_")
+  mat_from_stdcmp(mat=mat, file=f"/scratch/fauljona/fhr_comp_effort/i3_p2_d2/TRANSPORT/triton_run_step_20_iter_0/StdCmpMix{mat.id}_")
   mat.set_density('sum')
   mat.add_s_alpha_beta(name='c_Graphite', fraction=1.0)
 
@@ -49,6 +51,7 @@ matPlena.add_nuclide('Li6', percent=0.000000691507, percent_type='ao')
 matPlena.add_nuclide('Li7', percent=0.0118566, percent_type='ao')
 matPlena.add_nuclide('Be9', percent=0.00592865, percent_type='ao')
 matPlena.add_nuclide('F19', percent=0.02371455, percent_type='ao')
+matPlena.add_s_alpha_beta(name='c_Graphite', fraction=1.0)
 matPlena.set_density('sum')
 
 matFlibe = openmc.Material(material_id=301, name='matFlibe', temperature=900.0)
@@ -65,8 +68,8 @@ mats.export_to_xml()
 """Geometry"""
 h = 550.0/16
 # TODO currently we just have fuel hexagons w/ no flibe need to compute side lengths of hexagons and then properly use box2 below as well.
-edge_1 = 20
-edge_2 = 21
+edge_1 = 2*22.5/3**0.5
+edge_2 = 2*23.4/3**0.5
 uList = []
 
 fuelPlanes = [openmc.ZPlane(z0=0.0)]
@@ -75,7 +78,7 @@ for this in range(16):
   fuelPlanes.append(openmc.ZPlane(z0=theH+34.375))
   theH += 34.375
 
-box1 = openmc.model.HexagonalPrism(edge_length=edge_1, boundary_type='reflective')
+box1 = openmc.model.HexagonalPrism(edge_length=edge_1)
 box2 = openmc.model.HexagonalPrism(edge_length=edge_2, boundary_type='reflective')
 
 plUpperPlena = openmc.ZPlane(z0=575.0)
@@ -87,7 +90,7 @@ plUpper = openmc.ZPlane(z0=625.0)
 plUpper.boundary_type = 'vacuum'
 plBottom.boundary_type = 'vacuum'
 
-flibeLower = openmc.Cell(cell_id=99, fill=matPlena, region=(-box1 & +plBottom & -plLowerPlena))
+flibeLower = openmc.Cell(cell_id=99, fill=matFlibe, region=(-box2 & +plBottom & -plLowerPlena))
 unfueledLower = openmc.Cell(cell_id=100, fill=matPlena, region=(-box1 & +plLowerPlena & -fuelPlanes[0]))
 c101 = openmc.Cell(cell_id=101, fill=f101, region=(-box1 & +fuelPlanes[0] &  -fuelPlanes[1]))
 c102 = openmc.Cell(cell_id=102, fill=f102, region=(-box1 & +fuelPlanes[1] &  -fuelPlanes[2]))
@@ -106,11 +109,13 @@ c114 = openmc.Cell(cell_id=114, fill=f114, region=(-box1 & +fuelPlanes[13] & -fu
 c115 = openmc.Cell(cell_id=115, fill=f115, region=(-box1 & +fuelPlanes[14] & -fuelPlanes[15]))
 c116 = openmc.Cell(cell_id=116, fill=f116, region=(-box1 & +fuelPlanes[15] & -fuelPlanes[16]))
 unfueledUpper = openmc.Cell(cell_id=117, fill=matPlena, region=(-box1 & -plUpperPlena & +fuelPlanes[-1]))
-flibeUpper = openmc.Cell(cell_id=118, fill=matPlena, region=(-box1 & -plUpper & +plUpperPlena))
+flibeUpper = openmc.Cell(cell_id=118, fill=matFlibe, region=(-box2 & -plUpper & +plUpperPlena))
+
+flibeOutside = openmc.Cell(cell_id = 1, fill=matFlibe, region=(+box1 & -box2 & +plLowerPlena & -plUpperPlena))
 
 fuelCells = [c101,c102,c103,c104,c105,c106,c107,c108,c109,c110,c111,c112,c113,c114,c115,c116]
-uCombined = openmc.Universe(universe_id=1, cells=fuelCells + [flibeLower, unfueledLower, flibeUpper, unfueledUpper])
-uCombined.plot(basis='yz', width=[2.5,800.0], origin=(0.0, 0.0, 300) )
+uCombined = openmc.Universe(universe_id=1, cells=fuelCells + [flibeLower, unfueledLower, flibeUpper, unfueledUpper, flibeOutside])
+
 
 geom = openmc.Geometry()
 geom.root_universe = uCombined
@@ -127,7 +132,7 @@ settings = openmc.Settings()
 settings.source = source
 settings.batches = 475
 settings.inactive = 275
-settings.particles = 300000
+settings.particles = 75000
 settings.temperature['method'] = 'interpolation'
 settings.export_to_xml()
 

@@ -8,6 +8,9 @@ Compute covariance
 
 Use Regression methods to reduce variance.
 
+For how-to on how to generate xs for openmc depletion see:
+For more details on the MicroXS class, including how to use OpenMC’s transport solver to generate microscopic cross sections and fluxes for use with IndependentOperator, see Loading and Generating Microscopic Cross Sections. https://docs.openmc.org/en/stable/usersguide/depletion.html#micros
+
 See:
 Book: Monte Carlo Methods by J. M. Hammersley & D. C. Handscomb
 PhD: ROBUST MONTE CARLO METHODS FOR LIGHT TRANSPORT SIMULATION (Stanford PhD)

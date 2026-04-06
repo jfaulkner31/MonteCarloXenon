@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='utf-8'?>
+<materials>
+  <material id="1" name="zirc" temperature="600">
+    <density value="6.56" units="g/cm3"/>
+    <nuclide name="O16" wo="0.00119276"/>
+    <nuclide name="Cr50" wo="4.16117e-05"/>
+    <nuclide name="Cr52" wo="0.000834483"/>
+    <nuclide name="Cr53" wo="9.64457e-05"/>
+    <nuclide name="Cr54" wo="2.446e-05"/>
+    <nuclide name="Fe54" wo="0.000112572"/>
+    <nuclide name="Fe56" wo="0.00183252"/>
+    <nuclide name="Fe57" wo="4.30778e-05"/>
+    <nuclide name="Fe58" wo="5.83334e-06"/>
+    <nuclide name="Zr90" wo="0.497862"/>
+    <nuclide name="Zr91" wo="0.10978"/>
+    <nuclide name="Zr92" wo="0.169646"/>
+    <nuclide name="Zr94" wo="0.175665"/>
+    <nuclide name="Zr96" wo="0.0289038"/>
+    <nuclide name="Sn112" wo="0.000127604"/>
+    <nuclide name="Sn114" wo="8.83732e-05"/>
+    <nuclide name="Sn115" wo="4.59255e-05"/>
+    <nuclide name="Sn116" wo="0.00198105"/>
+    <nuclide name="Sn117" wo="0.00105543"/>
+    <nuclide name="Sn118" wo="0.00335688"/>
+    <nuclide name="Sn119" wo="0.00120069"/>
+    <nuclide name="Sn120" wo="0.0045922"/>
+    <nuclide name="Sn122" wo="0.000663497"/>
+    <nuclide name="Sn124" wo="0.000843355"/>
+  </material>
+  <material id="2" name="helium" temperature="600">
+    <density value="1e-20" units="g/cm3"/>
+    <nuclide name="He4" ao="1"/>
+  </material>
+  <material id="3" name="fuel_0" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="4" name="water_0" temperature="600">
+    <density value="0.7546030708094662" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="5" name="fuel_1" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="6" name="water_1" temperature="600">
+    <density value="0.7525183699259038" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="7" name="fuel_2" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="8" name="water_2" temperature="600">
+    <density value="0.7489536335578002" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="9" name="fuel_3" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="10" name="water_3" temperature="600">
+    <density value="0.7443075080648967" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="11" name="fuel_4" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="12" name="water_4" temperature="600">
+    <density value="0.7389548246954739" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="13" name="fuel_5" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="14" name="water_5" temperature="600">
+    <density value="0.7332552620156545" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="15" name="fuel_6" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="16" name="water_6" temperature="600">
+    <density value="0.7274428202530673" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="17" name="fuel_7" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="18" name="water_7" temperature="600">
+    <density value="0.721756098929064" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="19" name="fuel_8" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="20" name="water_8" temperature="600">
+    <density value="0.7164137811728897" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="21" name="fuel_9" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="22" name="water_9" temperature="600">
+    <density value="0.7114728689887846" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="23" name="fuel_10" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="24" name="water_10" temperature="600">
+    <density value="0.7069719325284247" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="25" name="fuel_11" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="26" name="water_11" temperature="600">
+    <density value="0.7030623829102995" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="27" name="fuel_12" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="28" name="water_12" temperature="600">
+    <density value="0.6996937497615792" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="29" name="fuel_13" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="30" name="water_13" temperature="600">
+    <density value="0.6970235741182446" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="31" name="fuel_14" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="32" name="water_14" temperature="600">
+    <density value="0.6951039673406194" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+  <material id="33" name="fuel_15" depletable="true" volume="11.354950397811603" temperature="600">
+    <density units="sum"/>
+    <nuclide name="U235" ao="0.0008147143"/>
+    <nuclide name="U238" ao="0.0221791"/>
+    <nuclide name="O16" ao="0.04587589"/>
+    <nuclide name="O17" ao="1.74753e-05"/>
+  </material>
+  <material id="34" name="water_15" temperature="600">
+    <density value="0.6928623217867403" units="g/cm3"/>
+    <nuclide name="O16" ao="0.3330861"/>
+    <nuclide name="H1" ao="0.6663259"/>
+    <nuclide name="B10" ao="7.18697e-05"/>
+    <nuclide name="B11" ao="0.0002892846"/>
+    <sab name="c_H_in_H2O"/>
+  </material>
+</materials>

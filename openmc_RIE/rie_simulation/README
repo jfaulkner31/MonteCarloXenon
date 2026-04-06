@@ -1,0 +1,7 @@
+This is a simulation for REI scheme
+
+We reuse a single depletion matrix from ../chain_gen for every burnup step and every material.
+
+We have to independently recreate depletion in this method.
+
+This isnt particularly bad just kinda a pain in the butt.
