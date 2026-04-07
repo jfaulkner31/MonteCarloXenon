@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tallies>
+  <filter id="2" type="cell">
+    <bins>1</bins>
+  </filter>
+  <tally id="1" name="fuelFlux">
+    <filters>2</filters>
+    <scores>local-heating</scores>
+  </tally>
+</tallies>

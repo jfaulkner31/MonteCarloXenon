@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<materials>
+  <cross_sections>/home/jonathon/openmc_xs/endfb-vii.1-hdf5/cross_sections.xml</cross_sections>
+  <material depletable="true" id="1" name="fuel" temperature="909.04">
+    <density units="g/cm3" value="3.06"/>
+    <nuclide ao="7.010602e-05" name="U235"/>
+    <nuclide ao="0.002953509" name="U238"/>
+    <nuclide ao="0.009070844" name="Be9"/>
+    <nuclide ao="0.04837784" name="F19"/>
+    <nuclide ao="1.058009e-06" name="Li6"/>
+    <nuclide ao="0.01814063" name="Li7"/>
+  </material>
+  <material id="2" name="graphite" temperature="909.04">
+    <density units="g/cm3" value="1.843"/>
+    <nuclide ao="1" name="C0"/>
+    <sab name="c_Graphite"/>
+  </material>
+</materials>

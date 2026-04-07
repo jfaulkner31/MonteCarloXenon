@@ -2,10 +2,185 @@
 Generates a pincell and returns the model.
 """
 
-import openmc 
+import openmc
 import numpy as np
 import matplotlib.pyplot as plt
-  def get_model():
+import openmc.deplete
+
+class UO2Material():
+  """
+  UO2 openmc material
+  """
+  def __init__(self, temp: float, name: str):
+    """Uo2 generated from scale 3.5 wt% u235 composition"""
+    mat = openmc.Material(temperature=temp, name=name)
+    mat.add_nuclide('U235', percent=8.147143e-04, percent_type='ao')
+    mat.add_nuclide('U238', percent=2.217910e-02, percent_type='ao')
+    mat.add_nuclide('O16', percent=4.587589e-02, percent_type='ao')
+    mat.add_nuclide('O17', percent=1.747530e-05, percent_type='ao')
+    # mat.add_nuclide('O18', percent=9.427465e-05, percent_type='ao')
+    mat.set_density(units='sum')
+    mat.volume = 366/16 * np.pi * 0.3975**2
+    mat.depletable = True
+    self.mat = mat
+  def get_mat(self) -> openmc.Material:
+    return self.mat
+
+class GarbageMaterial():
+  """material with very low xs - meant to be helium gap"""
+  def __init__(self, name: str, temp: float = 600):
+    mat = openmc.Material(temperature=temp, name=name)
+    mat.add_nuclide('He4', percent=1, percent_type='ao')
+    mat.set_density(units='g/cm3', density=1e-20)
+    self.mat = mat
+  def get_mat(self) -> openmc.Material:
+    return self.mat
+
+class ZircMaterial():
+  """Zircaloy 4 openmc material"""
+  def __init__(self, temp: float, name: str):
+    mat = openmc.Material(temperature=temp, name=name)
+    mat.add_nuclide('O16',   percent=1.19276E-03, percent_type='wo')
+    mat.add_nuclide('Cr50',  percent=4.16117E-05, percent_type='wo')
+    mat.add_nuclide('Cr52',  percent=8.34483E-04, percent_type='wo')
+    mat.add_nuclide('Cr53',  percent=9.64457E-05, percent_type='wo')
+    mat.add_nuclide('Cr54',  percent=2.44600E-05, percent_type='wo')
+    mat.add_nuclide('Fe54',  percent=1.12572E-04, percent_type='wo')
+    mat.add_nuclide('Fe56',  percent=1.83252E-03, percent_type='wo')
+    mat.add_nuclide('Fe57',  percent=4.30778E-05, percent_type='wo')
+    mat.add_nuclide('Fe58',  percent=5.83334E-06, percent_type='wo')
+    mat.add_nuclide('Zr90',  percent=4.97862E-01, percent_type='wo')
+    mat.add_nuclide('Zr91',  percent=1.09780E-01, percent_type='wo')
+    mat.add_nuclide('Zr92',  percent=1.69646E-01, percent_type='wo')
+    mat.add_nuclide('Zr94',  percent=1.75665E-01, percent_type='wo')
+    mat.add_nuclide('Zr96',  percent=2.89038E-02, percent_type='wo')
+    mat.add_nuclide('Sn112', percent=1.27604E-04, percent_type='wo')
+    mat.add_nuclide('Sn114', percent=8.83732E-05, percent_type='wo')
+    mat.add_nuclide('Sn115', percent=4.59255E-05, percent_type='wo')
+    mat.add_nuclide('Sn116', percent=1.98105E-03, percent_type='wo')
+    mat.add_nuclide('Sn117', percent=1.05543E-03, percent_type='wo')
+    mat.add_nuclide('Sn118', percent=3.35688E-03, percent_type='wo')
+    mat.add_nuclide('Sn119', percent=1.20069E-03, percent_type='wo')
+    mat.add_nuclide('Sn120', percent=4.59220E-03, percent_type='wo')
+    mat.add_nuclide('Sn122', percent=6.63497E-04, percent_type='wo')
+    mat.add_nuclide('Sn124', percent=8.43355E-04, percent_type='wo')
+    mat.set_density(units='g/cm3', density=6.56)
+    self.mat = mat
+  def get_mat(self) -> openmc.Material:
+    return self.mat
+
+class WaterMaterial():
+  """water material"""
+  def __init__(self, temp: float, name: str, density: float):
+    mat = openmc.Material(temperature=temp, name=name)
+    mat.add_nuclide('O16',   percent=3.330861e-01, percent_type='ao')
+    mat.add_nuclide('H1',  percent=6.663259e-01, percent_type='ao')
+    mat.add_nuclide('B10',  percent=7.186970e-05, percent_type='ao')
+    mat.add_nuclide('B11',  percent=2.892846e-04, percent_type='ao')
+    mat.add_s_alpha_beta('c_H_in_H2O', fraction=1.0)
+    mat.set_density(units='g/cm3', density=density)
+    self.mat = mat
+  def get_mat(self) -> openmc.Material:
+    return self.mat
+
+class LWRPincell():
+  """
+  Universe for an LWR pincell
+  """
+  def __init__(self, name: str,
+              fuel_r: float, clad_ir: float, clad_or: float, pitch: float, dz: float,
+              Water: WaterMaterial, UO2: UO2Material, Zirc: ZircMaterial, Helium: GarbageMaterial):
+    # Dimensions
+    self.fuel_r = fuel_r
+    self.clad_ir = clad_ir
+    self.clad_or = clad_or
+    self.pitch = pitch
+    self.xPitch = pitch
+    self.yPitch = pitch
+    self.dz = dz
+
+    centroid = (0.0,0.0,0.0)
+
+    # Make planes.
+    xPlu = openmc.XPlane(x0=centroid[0] + self.xPitch/2.0)
+    xNeg = openmc.XPlane(x0=centroid[0] - self.xPitch/2.0)
+    yPlu = openmc.YPlane(y0=centroid[1] + self.yPitch/2.0)
+    yNeg = openmc.YPlane(y0=centroid[1] - self.yPitch/2.0)
+    zPlu = openmc.ZPlane(z0=centroid[2] + self.dz/2.0)
+    zNeg = openmc.ZPlane(z0=centroid[2] - self.dz/2.0)
+
+    # Make cylinders
+    fuel_cyl = openmc.ZCylinder(r=fuel_r)
+    clad_inner_cyl = openmc.ZCylinder(r=clad_ir)
+    clad_outer_cyl = openmc.ZCylinder(r=clad_or)
+
+    # Fuel cell, cladding cell, nothingness cell, water cell
+    fuel_cell = openmc.Cell(fill=UO2.get_mat(), region=(-fuel_cyl & -zPlu & +zNeg))
+    helium_cell = openmc.Cell(fill=Helium.get_mat(),
+                              region=(+fuel_cyl & -clad_inner_cyl & -zPlu & +zNeg))
+    zirc_cell = openmc.Cell(fill=Zirc.get_mat(), region=(+clad_inner_cyl & -clad_outer_cyl & -zPlu & +zNeg))
+    water_cell = openmc.Cell(fill=Water.get_mat(), region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg & +clad_outer_cyl))
+
+    # Universe
+    self.uni = openmc.Universe(name=name, cells=[fuel_cell, helium_cell, zirc_cell, water_cell])
+
+    # Store the plane objects in case we want to modify them later.
+    self.xPlu, self.xNeg, self.yPlu, self.yNeg, self.zPlu, self.zNeg = xPlu, xNeg, yPlu, yNeg, zPlu, zNeg
+  def get_uni(self) -> openmc.Universe:
+    return self.uni
+  def set_refl_z(self):
+    self.zPlu.boundary_type='reflective'
+    self.zNeg.boundary_type='reflective'
+
+class LWRControlRod():
+  """
+  Universe for an LWR control rod cell aka
+  empty instrumentation thimble
+  """
+  def __init__(self, name: str,
+              clad_ir: float, clad_or: float, pitch: float, dz: float,
+              Water: WaterMaterial, Zirc: ZircMaterial):
+    # Dimensions
+    self.clad_ir = clad_ir
+    self.clad_or = clad_or
+    self.pitch = pitch
+    self.xPitch = pitch
+    self.yPitch = pitch
+    self.dz = dz
+
+    centroid = (0.0,0.0,0.0)
+
+    # Make planes.
+    xPlu = openmc.XPlane(x0=centroid[0] + self.xPitch/2.0)
+    xNeg = openmc.XPlane(x0=centroid[0] - self.xPitch/2.0)
+    yPlu = openmc.YPlane(y0=centroid[1] + self.yPitch/2.0)
+    yNeg = openmc.YPlane(y0=centroid[1] - self.yPitch/2.0)
+    zPlu = openmc.ZPlane(z0=centroid[2] + self.dz/2.0)
+    zNeg = openmc.ZPlane(z0=centroid[2] - self.dz/2.0)
+
+    # Make cylinders
+    clad_inner_cyl = openmc.ZCylinder(r=clad_ir)
+    clad_outer_cyl = openmc.ZCylinder(r=clad_or)
+
+    # Fuel cell, cladding cell, nothingness cell, water cell
+    water_cell0 = openmc.Cell(fill=Water.get_mat(), region=(-clad_inner_cyl & -zPlu & +zNeg))
+    zirc_cell = openmc.Cell(fill=Zirc.get_mat(), region=(+clad_inner_cyl & -clad_outer_cyl & -zPlu & +zNeg))
+    water_cell = openmc.Cell(fill=Water.get_mat(), region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg & +clad_outer_cyl))
+
+    # Universe
+    self.uni = openmc.Universe(name=name, cells=[zirc_cell, water_cell, water_cell0])
+
+    # Store the plane objects in case we want to modify them later.
+    self.xPlu, self.xNeg, self.yPlu, self.yNeg, self.zPlu, self.zNeg = xPlu, xNeg, yPlu, yNeg, zPlu, zNeg
+  def get_uni(self) -> openmc.Universe:
+    return self.uni
+  def set_refl_z(self):
+    self.zPlu.boundary_type='reflective'
+
+    self.zNeg.boundary_type='reflective'
+
+
+def get_model() -> openmc.Model:
   densCurve = np.array([[13.039305966937505, 0.7546030708094662],
   [17.971143135616785, 0.7541532649090789],
   [22.902980304296058, 0.7536839022304138],
@@ -88,178 +263,6 @@ import matplotlib.pyplot as plt
   densValues = yNew
 
 
-  class UO2Material():
-    """
-    UO2 openmc material
-    """
-    def __init__(self, temp: float, name: str):
-      """Uo2 generated from scale 3.5 wt% u235 composition"""
-      mat = openmc.Material(temperature=temp, name=name)
-      mat.add_nuclide('U235', percent=8.147143e-04, percent_type='ao')
-      mat.add_nuclide('U238', percent=2.217910e-02, percent_type='ao')
-      mat.add_nuclide('O16', percent=4.587589e-02, percent_type='ao')
-      mat.add_nuclide('O17', percent=1.747530e-05, percent_type='ao')
-      # mat.add_nuclide('O18', percent=9.427465e-05, percent_type='ao')
-      mat.set_density(units='sum')
-      mat.volume = 366/16 * np.pi * 0.3975**2
-      mat.depletable = True
-      self.mat = mat
-    def get_mat(self) -> openmc.Material:
-      return self.mat
-
-  class GarbageMaterial():
-    """material with very low xs - meant to be helium gap"""
-    def __init__(self, name: str, temp: float = 600):
-      mat = openmc.Material(temperature=temp, name=name)
-      mat.add_nuclide('He4', percent=1, percent_type='ao')
-      mat.set_density(units='g/cm3', density=1e-20)
-      self.mat = mat
-    def get_mat(self) -> openmc.Material:
-      return self.mat
-
-  class ZircMaterial():
-    """Zircaloy 4 openmc material"""
-    def __init__(self, temp: float, name: str):
-      mat = openmc.Material(temperature=temp, name=name)
-      mat.add_nuclide('O16',   percent=1.19276E-03, percent_type='wo')
-      mat.add_nuclide('Cr50',  percent=4.16117E-05, percent_type='wo')
-      mat.add_nuclide('Cr52',  percent=8.34483E-04, percent_type='wo')
-      mat.add_nuclide('Cr53',  percent=9.64457E-05, percent_type='wo')
-      mat.add_nuclide('Cr54',  percent=2.44600E-05, percent_type='wo')
-      mat.add_nuclide('Fe54',  percent=1.12572E-04, percent_type='wo')
-      mat.add_nuclide('Fe56',  percent=1.83252E-03, percent_type='wo')
-      mat.add_nuclide('Fe57',  percent=4.30778E-05, percent_type='wo')
-      mat.add_nuclide('Fe58',  percent=5.83334E-06, percent_type='wo')
-      mat.add_nuclide('Zr90',  percent=4.97862E-01, percent_type='wo')
-      mat.add_nuclide('Zr91',  percent=1.09780E-01, percent_type='wo')
-      mat.add_nuclide('Zr92',  percent=1.69646E-01, percent_type='wo')
-      mat.add_nuclide('Zr94',  percent=1.75665E-01, percent_type='wo')
-      mat.add_nuclide('Zr96',  percent=2.89038E-02, percent_type='wo')
-      mat.add_nuclide('Sn112', percent=1.27604E-04, percent_type='wo')
-      mat.add_nuclide('Sn114', percent=8.83732E-05, percent_type='wo')
-      mat.add_nuclide('Sn115', percent=4.59255E-05, percent_type='wo')
-      mat.add_nuclide('Sn116', percent=1.98105E-03, percent_type='wo')
-      mat.add_nuclide('Sn117', percent=1.05543E-03, percent_type='wo')
-      mat.add_nuclide('Sn118', percent=3.35688E-03, percent_type='wo')
-      mat.add_nuclide('Sn119', percent=1.20069E-03, percent_type='wo')
-      mat.add_nuclide('Sn120', percent=4.59220E-03, percent_type='wo')
-      mat.add_nuclide('Sn122', percent=6.63497E-04, percent_type='wo')
-      mat.add_nuclide('Sn124', percent=8.43355E-04, percent_type='wo')
-      mat.set_density(units='g/cm3', density=6.56)
-      self.mat = mat
-    def get_mat(self) -> openmc.Material:
-      return self.mat
-
-  class WaterMaterial():
-    """water material"""
-    def __init__(self, temp: float, name: str, density: float):
-      mat = openmc.Material(temperature=temp, name=name)
-      mat.add_nuclide('O16',   percent=3.330861e-01, percent_type='ao')
-      mat.add_nuclide('H1',  percent=6.663259e-01, percent_type='ao')
-      mat.add_nuclide('B10',  percent=7.186970e-05, percent_type='ao')
-      mat.add_nuclide('B11',  percent=2.892846e-04, percent_type='ao')
-      mat.add_s_alpha_beta('c_H_in_H2O', fraction=1.0)
-      mat.set_density(units='g/cm3', density=density)
-      self.mat = mat
-    def get_mat(self) -> openmc.Material:
-      return self.mat
-
-  class LWRPincell():
-    """
-    Universe for an LWR pincell
-    """
-    def __init__(self, name: str,
-                fuel_r: float, clad_ir: float, clad_or: float, pitch: float, dz: float,
-                Water: WaterMaterial, UO2: UO2Material, Zirc: ZircMaterial, Helium: GarbageMaterial):
-      # Dimensions
-      self.fuel_r = fuel_r
-      self.clad_ir = clad_ir
-      self.clad_or = clad_or
-      self.pitch = pitch
-      self.xPitch = pitch
-      self.yPitch = pitch
-      self.dz = dz
-
-      centroid = (0.0,0.0,0.0)
-
-      # Make planes.
-      xPlu = openmc.XPlane(x0=centroid[0] + self.xPitch/2.0)
-      xNeg = openmc.XPlane(x0=centroid[0] - self.xPitch/2.0)
-      yPlu = openmc.YPlane(y0=centroid[1] + self.yPitch/2.0)
-      yNeg = openmc.YPlane(y0=centroid[1] - self.yPitch/2.0)
-      zPlu = openmc.ZPlane(z0=centroid[2] + self.dz/2.0)
-      zNeg = openmc.ZPlane(z0=centroid[2] - self.dz/2.0)
-
-      # Make cylinders
-      fuel_cyl = openmc.ZCylinder(r=fuel_r)
-      clad_inner_cyl = openmc.ZCylinder(r=clad_ir)
-      clad_outer_cyl = openmc.ZCylinder(r=clad_or)
-
-      # Fuel cell, cladding cell, nothingness cell, water cell
-      fuel_cell = openmc.Cell(fill=UO2.get_mat(), region=(-fuel_cyl & -zPlu & +zNeg))
-      helium_cell = openmc.Cell(fill=Helium.get_mat(),
-                                region=(+fuel_cyl & -clad_inner_cyl & -zPlu & +zNeg))
-      zirc_cell = openmc.Cell(fill=Zirc.get_mat(), region=(+clad_inner_cyl & -clad_outer_cyl & -zPlu & +zNeg))
-      water_cell = openmc.Cell(fill=Water.get_mat(), region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg & +clad_outer_cyl))
-
-      # Universe
-      self.uni = openmc.Universe(name=name, cells=[fuel_cell, helium_cell, zirc_cell, water_cell])
-
-      # Store the plane objects in case we want to modify them later.
-      self.xPlu, self.xNeg, self.yPlu, self.yNeg, self.zPlu, self.zNeg = xPlu, xNeg, yPlu, yNeg, zPlu, zNeg
-    def get_uni(self) -> openmc.Universe:
-      return self.uni
-    def set_refl_z(self):
-      self.zPlu.boundary_type='reflective'
-      self.zNeg.boundary_type='reflective'
-
-  class LWRControlRod():
-    """
-    Universe for an LWR control rod cell aka
-    empty instrumentation thimble
-    """
-    def __init__(self, name: str,
-                clad_ir: float, clad_or: float, pitch: float, dz: float,
-                Water: WaterMaterial, Zirc: ZircMaterial):
-      # Dimensions
-      self.clad_ir = clad_ir
-      self.clad_or = clad_or
-      self.pitch = pitch
-      self.xPitch = pitch
-      self.yPitch = pitch
-      self.dz = dz
-
-      centroid = (0.0,0.0,0.0)
-
-      # Make planes.
-      xPlu = openmc.XPlane(x0=centroid[0] + self.xPitch/2.0)
-      xNeg = openmc.XPlane(x0=centroid[0] - self.xPitch/2.0)
-      yPlu = openmc.YPlane(y0=centroid[1] + self.yPitch/2.0)
-      yNeg = openmc.YPlane(y0=centroid[1] - self.yPitch/2.0)
-      zPlu = openmc.ZPlane(z0=centroid[2] + self.dz/2.0)
-      zNeg = openmc.ZPlane(z0=centroid[2] - self.dz/2.0)
-
-      # Make cylinders
-      clad_inner_cyl = openmc.ZCylinder(r=clad_ir)
-      clad_outer_cyl = openmc.ZCylinder(r=clad_or)
-
-      # Fuel cell, cladding cell, nothingness cell, water cell
-      water_cell0 = openmc.Cell(fill=Water.get_mat(), region=(-clad_inner_cyl & -zPlu & +zNeg))
-      zirc_cell = openmc.Cell(fill=Zirc.get_mat(), region=(+clad_inner_cyl & -clad_outer_cyl & -zPlu & +zNeg))
-      water_cell = openmc.Cell(fill=Water.get_mat(), region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg & +clad_outer_cyl))
-
-      # Universe
-      self.uni = openmc.Universe(name=name, cells=[zirc_cell, water_cell, water_cell0])
-
-      # Store the plane objects in case we want to modify them later.
-      self.xPlu, self.xNeg, self.yPlu, self.yNeg, self.zPlu, self.zNeg = xPlu, xNeg, yPlu, yNeg, zPlu, zNeg
-    def get_uni(self) -> openmc.Universe:
-      return self.uni
-    def set_refl_z(self):
-      self.zPlu.boundary_type='reflective'
-
-      self.zNeg.boundary_type='reflective'
-      
   # Water densities.
   densities = densValues
   temps = [600]*16
@@ -284,7 +287,7 @@ import matplotlib.pyplot as plt
   fuel_mats_list = [this.get_mat() for this in fuel_mats]
   water_mats_list = [this.get_mat() for this in water_mats]
   mats_all = openmc.Materials(materials=fuel_mats_list + water_mats_list + [zirc.get_mat(), helium.get_mat()])
-  mats_all.export_to_xml()
+  # mats_all.export_to_xml()
 
   # Generate pincells
   for idx, fuel in enumerate(water_mats):
@@ -342,12 +345,26 @@ import matplotlib.pyplot as plt
   # Export geometry to xml
   geom = openmc.Geometry()
   geom.root_universe = final_universe
-  geom.export_to_xml()
+  # geom.export_to_xml()
 
   # Plot the universe! Look at all those unique materials/cells!
   # Double check the thimbles are correctly laid out as well!
   final_universe.plot(basis='xy', pixels=50000, origin=(0.0,0.0,366/2), color_by='material')
 
+  """Tallies"""
+  talls = []
+  for this in fuel_mats_list:
+    the_t = openmc.Tally(name=f'flux{this.id}', tally_id=this.id)
+    the_t.scores = ['flux']
+    the_t.filters = [
+      openmc.MaterialFilter(bins=[this,])
+    ]
+    talls.append(the_t)
+
+  tallies = openmc.Tallies(tallies=talls)
+  # tallies.export_to_xml()
+
+
   """Starting source and settings"""
   # Make a point source at the center of the problem
   # point = openmc.stats.Point((0.0,0.0,0.0))
@@ -357,34 +374,18 @@ import matplotlib.pyplot as plt
   source = openmc.IndependentSource(space=spatial_dist)
   settings = openmc.Settings()
   settings.source = source
-  settings.batches = 1000
-  settings.inactive = 500
-  settings.particles = 300000
+  settings.batches = 20
+  settings.inactive = 10
+  settings.particles = 3000
   #settings.temperature['method'] = 'interpolation'
-  settings.export_to_xml()
-
-  """Starting source and settings"""
-  # Make a point source at the center of the problem
-  # point = openmc.stats.Point((0.0,0.0,0.0))
-  spatial_dist = openmc.stats.Box((-pitch/2,-pitch/2,0.0), (pitch/2,pitch/2,375), only_fissionable=True)
-
-  # Define the starting source
-  source = openmc.IndependentSource(space=spatial_dist)
-  settings = openmc.Settings()
-  settings.source = source
-  settings.batches = 1000
-  settings.inactive = 500
-  settings.particles = 300000
-  #settings.temperature['method'] = 'interpolation'
-  settings.export_to_xml()
+  # settings.export_to_xml()
 
   """Setup chain and depletion"""
-  import openmc.deplete
-  model = openmc.Model(geom, mats_all, settings)
+  model = openmc.Model(geom, mats_all, settings, tallies)
   return model
 
   """
-    
+
     chain = 'chain_casl_pwr.xml'
     openmc.config['chain_file'] = chain
 
