@@ -4,14 +4,63 @@ import openmc.deplete
 import numpy as np
 import copy
 import pickle as pkl
+import glob
+import os
+openmc.deplete.pool.USE_MULTIPROCESSING=False
 
 """
 Depletion scheme for explicit euler. Meant to just get cross sections at the very end for reuse later.
 """
 
 class Regression():
-  def __init__():
+  def __init__(self):
     pass
+  def get_avg(self, res: dict, val: float):
+    """
+    gets average from a results dict. 
+    Note that res must be ran through self.tally_by_gen
+    before the averages can be computed.
+
+    Parameters
+    ==========
+    res : dict
+      batch-by-batch estimate of the flux (each batch represents a single trial)
+    val : float
+      what to normalize the output flux to
+    
+    Returns
+    =======
+    flux : np.array
+      the normalized average flux (norm'd across all gens)
+    """
+    flux = np.zeros(len(res[0]))
+    for key in res.keys():
+      # Get the normalized flux (this batches estimate for flux)
+      the_unnorm_flux = res[key]
+      sum_unnorm = np.sum(the_unnorm_flux)
+      if sum_unnorm > 0:
+        the_normd_flux = the_unnorm_flux/sum_unnorm * val
+        flux += the_normd_flux
+    flux *= val / np.sum(flux)
+    return flux
+  
+  def write_res_pkl(self, res: dict, file:str):
+    with open(file, 'wb') as f:
+      pkl.dump(res, f)
+      
+  def tally_by_gen(self, res: dict):
+    """does a quick cleanup after running transport"""
+    theLength = res[0].__len__()
+    shape0 = np.zeros(theLength)
+    d = {}
+    """nice little function to get tallies by gen"""
+    for key in res.keys():
+      shape1 = np.array([ this[:,:,1][0][0] for this in res[key][0:theLength] ])
+      shape = shape1 - shape0
+      d[key] = shape
+      # advance
+      shape0 = shape1
+    return d
 
   def normalize_res(self, res: dict, val: float):
     """normalizes res dictionary to some value"""
@@ -88,6 +137,10 @@ def run_transport_for_chain(model: openmc.Model, chain_file: str):
 
 def run_transport(model: openmc.Model, power_tally_ids: list):
   """runs an openmc transport calculation while doing batch-by-patch tallies"""
+  # Clear xml's
+  for file in glob.glob("*.xml"):
+    os.remove(file)
+  # export model
   model.export_to_xml()
   res = {} # contains/stores power tally ids and stuff like that.
   settings = model.settings
@@ -178,63 +231,98 @@ def get_depletion_materials_from_results_EOS(output_name: str, model: openmc.Mod
       depletion_mat_list.append(eos_mat)
   return openmc.Materials(depletion_mat_list)
 
-
-"""some random settings"""
+def chain_from_pkl(file: str):
+  with open(file, 'rb') as f:
+    fakeFluxes, chain = pkl.load(f)
+    if len(chain) == 1:
+      new_chain = []
+      for this in range(16):
+        new_chain.append(copy.deepcopy(chain[0]))
+      return new_chain
+    else:
+      return chain
+    
+    
+"""
+Some random settings
+"""
 fuel_r=0.3975
 power_density = 104
 power = power_density * 366  * np.pi * fuel_r**2
-dt = [0.5, 1, 1.5, 2, 5, 10, 20] # up to 20 days
+dt = [0.5, 1, 1.5, 2, 5, 10, 10, 10, 10, 
+25, 25, 25, 25, 
+25, 25, 25, 25, 
+25, 25, 25, 25] # up to 350 days
 iterations = 1 # number of iterations we run (so +1 to this for total # transports)
 Nstart = 500
 Nactive = 500
 
-"""get the model"""
+"""
+Get the model
+"""
 model = pwr.get_model()
 chain_file = '../chain_casl_pwr.xml'
 
-"""regression class"""
+"""
+Regression class
+"""
 regr =  Regression()
 
-"""run explicit euler depletion scheme"""
+"""
+Run explicit euler depletion scheme
+"""
 depletion_materials = depletable_mats_from_model(model=model) # get from starting model
 depl_id_list = [this.id for this in depletion_materials]
+print(depl_id_list)
+# raise Exception("kill")
 
-"""T0 transport and get fluxes"""
+"""
+T0 transport and get fluxes
+"""
 d = run_transport(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
-res = regr.
+res = regr.tally_by_gen(res=d)
 res_normd = regr.normalize_res(res=res, val=1.0)
-last_shape = res_normd[max(list(regr.keys()))]
-fluxes = last_shape # todo might have to do something to this shape but just get the last one is ok.
-_fakefluxes, micro_xs = run_transport_for_chain(model=model, chain_file=chain_file) # todo load reference xs here instead
+fluxes = regr.get_avg(res=res_normd, val=1.0)
+# _fakefluxes, micro_xs = run_transport_for_chain(model=model, chain_file=chain_file) # todo load reference xs here instead
+micro_xs = chain_from_pkl(file='../chain_gen/FINAL.pkl') # get xs from a reference file
 
 for idx, this_dt in enumerate(dt):
   res_list = []
   I = []
   for ni in range(iterations+1):
-    """Start w/ predicting forward in time with most recent fluxes"""
+    """Start w/ predicting forward in time with most recent flux estimate"""
     # Deplete (operator setup and then deplete)
     output_name = f"depl_step_s{idx}_i{ni}.h5"
+    print("Now depleting with flux =", fluxes)
     op = openmc.deplete.IndependentOperator(depletion_materials, fluxes, micro_xs, chain_file=chain_file)
     openmc.deplete.PredictorIntegrator(op, timesteps=[this_dt], power=power, timestep_units='d').integrate(path=output_name)
 
     # Now update the transport materials (inline modify model.materials)
     make_transport_material_library(output_name=output_name, model=model, chain_file=chain_file)
-    res = run_transport(model) ## this one for res tracking...
+    d = run_transport(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
+    res =  regr.tally_by_gen(res=d)
+    regr.write_res_pkl(res=res, file=f'res_s{idx}_i{ni}.pkl')
     res_normd = regr.normalize_res(res=res, val=1.0)
-    last_shape = res_normd[max(list(regr.keys()))]
-    fluxes = last_shape # todo might have to do something to this shape but just get the last one is ok.
+    fluxes = regr.get_avg(res=res_normd, val=1.0)
     I.append(copy.deepcopy(fluxes))
     res_list.append(res_normd)
 
     # Corrector fluxes or keep them as is (correct if ni is above 0)
     if ni > 0:
       fluxes = []
-      for f in range(depl_id_list): # go thorugh fList and get all the newly predicted fluxes.. note that tally id's have same ids as depl materials
-        flux_f = regr.get_new_I(N=Nactive, start=Nstart, F=res_list, I=I, f=f)
-        fluxes.append(flux_f)
+      coefs= [] 
+      for f in range(len(depl_id_list)): # go thorugh fList and get all the newly predicted fluxes.. note that tally id's have same ids as depl materials
+        flux_f, coef = regr.get_new_I(N=Nactive, start=Nstart, F=res_list, I=I, f=f)
+        coefs.append(coef)
+        fluxes.append(flux_f[0][0])
     else:
       fluxes = fluxes
 
+  # Depletion finalize with final flux values.
+  output_name = f"depl_step_s{idx}_final.h5"
+  print("Now doing final depletion CORRECTOR and depleting with flux =", fluxes)
+  op = openmc.deplete.IndependentOperator(depletion_materials, fluxes, micro_xs, chain_file=chain_file)
+  openmc.deplete.PredictorIntegrator(op, timesteps=[this_dt], power=power, timestep_units='d').integrate(path=output_name)
+
   # Now make the depletion materials BOS for the next depletion step...
   depletion_materials = get_depletion_materials_from_results_EOS(output_name=output_name, model=model)
-

@@ -374,9 +374,9 @@ def get_model() -> openmc.Model:
   source = openmc.IndependentSource(space=spatial_dist)
   settings = openmc.Settings()
   settings.source = source
-  settings.batches = 20
-  settings.inactive = 10
-  settings.particles = 3000
+  settings.batches = 1000
+  settings.inactive = 500
+  settings.particles = 300000
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 
