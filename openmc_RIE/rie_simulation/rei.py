@@ -17,7 +17,7 @@ class Regression():
     pass
   def get_avg(self, res: dict, val: float):
     """
-    gets average from a results dict. 
+    gets average from a results dict.
     Note that res must be ran through self.tally_by_gen
     before the averages can be computed.
 
@@ -27,7 +27,7 @@ class Regression():
       batch-by-batch estimate of the flux (each batch represents a single trial)
     val : float
       what to normalize the output flux to
-    
+
     Returns
     =======
     flux : np.array
@@ -43,11 +43,11 @@ class Regression():
         flux += the_normd_flux
     flux *= val / np.sum(flux)
     return flux
-  
+
   def write_res_pkl(self, res: dict, file:str):
     with open(file, 'wb') as f:
       pkl.dump(res, f)
-      
+
   def tally_by_gen(self, res: dict):
     """does a quick cleanup after running transport"""
     theLength = res[0].__len__()
@@ -241,21 +241,22 @@ def chain_from_pkl(file: str):
       return new_chain
     else:
       return chain
-    
-    
+
+
 """
 Some random settings
 """
 fuel_r=0.3975
 power_density = 104
 power = power_density * 366  * np.pi * fuel_r**2
-dt = [0.5, 1, 1.5, 2, 5, 10, 10, 10, 10, 
-25, 25, 25, 25, 
-25, 25, 25, 25, 
+dt = [0.5, 1, 1.5, 2, 5, 10, 10, 10, 10,
+25, 25, 25, 25,
+25, 25, 25, 25,
 25, 25, 25, 25] # up to 350 days
 iterations = 1 # number of iterations we run (so +1 to this for total # transports)
 Nstart = 500
 Nactive = 500
+iter_strategy = 'regression' # 'const_relax' OR set iterations to 0 to straight burn
 
 """
 Get the model
@@ -309,12 +310,16 @@ for idx, this_dt in enumerate(dt):
 
     # Corrector fluxes or keep them as is (correct if ni is above 0)
     if ni > 0:
-      fluxes = []
-      coefs= [] 
-      for f in range(len(depl_id_list)): # go thorugh fList and get all the newly predicted fluxes.. note that tally id's have same ids as depl materials
-        flux_f, coef = regr.get_new_I(N=Nactive, start=Nstart, F=res_list, I=I, f=f)
-        coefs.append(coef)
-        fluxes.append(flux_f[0][0])
+      if iter_strategy == 'regression':
+        fluxes = []
+        coefs= []
+        for f in range(len(depl_id_list)): # go thorugh fList and get all the newly predicted fluxes.. note that tally id's have same ids as depl materials
+          flux_f, coef = regr.get_new_I(N=Nactive, start=Nstart, F=res_list, I=I, f=f)
+          coefs.append(coef)
+          fluxes.append(flux_f[0][0])
+        fluxes = np.array(fluxes)
+      elif iter_strategy == 'const_relax':
+        fluxes = 0.7*I[0] + 0.3*I[1] # 1 iteration, relaxation factor of 0.3  # TODO fix this but this works for now for only 1 iteration
     else:
       fluxes = fluxes
 
