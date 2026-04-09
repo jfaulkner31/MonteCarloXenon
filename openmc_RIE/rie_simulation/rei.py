@@ -289,6 +289,7 @@ micro_xs = chain_from_pkl(file='../chain_gen/FINAL.pkl') # get xs from a referen
 
 for idx, this_dt in enumerate(dt):
   res_list = []
+  flux_this_step_list = []
   I = []
   for ni in range(iterations+1):
     """Start w/ predicting forward in time with most recent flux estimate"""
@@ -318,10 +319,16 @@ for idx, this_dt in enumerate(dt):
           coefs.append(coef)
           fluxes.append(flux_f[0][0])
         fluxes = np.array(fluxes)
-      elif iter_strategy == 'const_relax':
-        fluxes = 0.7*I[0] + 0.3*I[1] # 1 iteration, relaxation factor of 0.3  # TODO fix this but this works for now for only 1 iteration
+        fluxes *= 1.0 / np.sum(fluxes)
+      elif iter_strategy == 'const_relax': # constant relaxation of current fluxes and the previously relaxed fluxes.
+        prev = flux_this_step_list[-1]
+        fluxes = 0.7*prev + 0.3*fluxes # 1 iteration, relaxation factor of 0.3  # TODO fix this but this works for now for only 1 iteration
+        fluxes *= 1.0 / np.sum(fluxes)
     else:
-      fluxes = fluxes
+      fluxes = fluxes # we cant relax since we have only 1 solution.... (impl euler.)
+    
+    # fluxes at this BU step. (this will naturally be all the T1 fluxes.)
+    flux_this_step_list.append(fluxes)
 
   # Depletion finalize with final flux values.
   output_name = f"depl_step_s{idx}_final.h5"
