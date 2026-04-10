@@ -35,6 +35,21 @@ THETA4 = np.array([
   -1.548393223297123e0 + 1.191822946627425e0j
 ])
 
+class CoupledDepleter():
+  """
+  Performs depletion of multiple mixtures at once using a block matrix.
+  """
+  def __init__(self):
+    pass
+  def _solve():
+    """Solver"""
+    pass
+  def solve():
+    """
+    Public solve function
+    """
+
+
 class Depleter():
   """
   Performs depletion based on input.
