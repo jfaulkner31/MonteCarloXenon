@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tallies>
+  <filter id="1" type="material">
+    <bins>3</bins>
+  </filter>
+  <filter id="2" type="material">
+    <bins>5</bins>
+  </filter>
+  <filter id="3" type="material">
+    <bins>7</bins>
+  </filter>
+  <filter id="4" type="material">
+    <bins>9</bins>
+  </filter>
+  <filter id="5" type="material">
+    <bins>11</bins>
+  </filter>
+  <filter id="6" type="material">
+    <bins>13</bins>
+  </filter>
+  <filter id="7" type="material">
+    <bins>15</bins>
+  </filter>
+  <filter id="8" type="material">
+    <bins>17</bins>
+  </filter>
+  <filter id="9" type="material">
+    <bins>19</bins>
+  </filter>
+  <filter id="10" type="material">
+    <bins>21</bins>
+  </filter>
+  <filter id="11" type="material">
+    <bins>23</bins>
+  </filter>
+  <filter id="12" type="material">
+    <bins>25</bins>
+  </filter>
+  <filter id="13" type="material">
+    <bins>27</bins>
+  </filter>
+  <filter id="14" type="material">
+    <bins>29</bins>
+  </filter>
+  <filter id="15" type="material">
+    <bins>31</bins>
+  </filter>
+  <filter id="16" type="material">
+    <bins>33</bins>
+  </filter>
+  <tally id="3" name="flux3">
+    <filters>1</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="5" name="flux5">
+    <filters>2</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="7" name="flux7">
+    <filters>3</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="9" name="flux9">
+    <filters>4</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="11" name="flux11">
+    <filters>5</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="13" name="flux13">
+    <filters>6</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="15" name="flux15">
+    <filters>7</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="17" name="flux17">
+    <filters>8</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="19" name="flux19">
+    <filters>9</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="21" name="flux21">
+    <filters>10</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="23" name="flux23">
+    <filters>11</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="25" name="flux25">
+    <filters>12</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="27" name="flux27">
+    <filters>13</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="29" name="flux29">
+    <filters>14</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="31" name="flux31">
+    <filters>15</filters>
+    <scores>flux</scores>
+  </tally>
+  <tally id="33" name="flux33">
+    <filters>16</filters>
+    <scores>flux</scores>
+  </tally>
+</tallies>
