@@ -11,7 +11,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "python": "/home/jonathon/miniconda3/envs/openmc-env/bin/python"
+      "python": ".pixi/envs/pin/python"
     }
   ]
 }
