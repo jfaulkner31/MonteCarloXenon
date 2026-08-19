@@ -230,7 +230,7 @@ def validate_case(time: float, file: str, k_max: int, m: int, dpi: int = 100):
     print("Alphas =", andersonAlphas)
     all_fxs = get_all_fx(t=TIME, file=FILE)
     for ai, alpha in enumerate(andersonAlphas):
-      alphaVec += alpha * all_fxs[ai]
+      alphaVec += alpha * all_fxs[len(all_fxs)-len(andersonAlphas):][ai]
     
 
 

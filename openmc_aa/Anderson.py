@@ -13,6 +13,8 @@ import shutil
 from pathlib import Path
 import matplotlib.pyplot as plt
 from Colors import Colors, nice_grid, nice_legend
+import logging 
+from SIE import SIE
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
 """
@@ -33,8 +35,8 @@ class Anderson():
     self._latest_depletion_output_name: str = None 
 
     # Plotting and analysis settings for consistency
-    self._colors = [Colors.colors()+Colors.colors2()][0]
-    self._markers = ['s', 'x', 'd', '+', '^', '>', '<']
+    self._colors = [Colors.colors()+Colors.colors2()][0]*2
+    self._markers = ['s', 'x', 'd', '+', '^', '>', '<']*4
 
 
   """
@@ -271,6 +273,19 @@ class Anderson():
     nice_legend()
     nice_grid()
 
+  def plot_final_x(self, time: float, label: str, dpi=100, coloridx: int = 0):
+    c = coloridx
+    self._time_flag(t=time)
+
+    plt.figure(figsize=(5,3), dpi=dpi)
+    plt.plot(self._x[time][-1], '-', markerfacecolor='none', label=label, color=self._colors[c], marker=self._markers[c], markersize=4, mew=0.7, lw=0.7)
+    
+    plt.xlabel('Fissionable zone index')
+    plt.ylabel('Flux (normalized)')
+    nice_legend()
+    nice_grid()
+
+
   def plot_fx(self, time: float, dpi=100, include_xfinal: bool = True, include_average: bool = True):
     """
     Plot the progression of x_next
@@ -347,7 +362,7 @@ class Anderson():
       x_old = x
     
     plt.figure(figsize=(5,3), dpi=dpi)
-    plt.plot(np.linspace(1,len(g), len(g)), g, 'ks-', label='L2', lw=0.8, markerfacecolor='none')
+    plt.plot(np.linspace(1,len(g), len(g)), g, 'ks-', label=f'L{order}', lw=0.8, markerfacecolor='none')
     nice_grid()
     plt.yscale(yscale)
     plt.xlabel('Iteration')
@@ -416,28 +431,91 @@ Batch-by-batch transport simulation in OpenMC
 def run_transport(model: openmc.Model, power_tally_ids: list):
   """runs an openmc transport calculation while doing batch-by-patch tallies"""
   GARBAGE_RUN = False
+
   # Clear xml's
   for file in glob.glob("*.xml"):
     os.remove(file)
 
   if GARBAGE_RUN:
     model.settings.particles = 500
-  
+
   # Export model to XML
   model.export_to_xml()
-  
+
   res = {} # contains/stores power tally ids and stuff like that.
 
   openmc.lib.init() # initialize
   openmc.lib.simulation_init()
   for b in range(model.settings.batches):
     tallies = [openmc.lib.tallies[the_id] for the_id in power_tally_ids]
-    openmc.lib.next_batch()
+    openmc.lib.next_batch() 
     results = [tally.results for tally in tallies]
     res[b] = copy.deepcopy(results)
   openmc.lib.simulation_finalize()
   openmc.lib.finalize()
   return res
+
+def run_transport_standard(model: openmc.Model, power_tally_ids: list):
+  """
+  Standard method of running transport 
+  using the usual openmc kernels.
+
+  Returns
+  =======
+  res : dict[int]->list[Tallies.mean()]
+    res[batches]->openmc.Tallies object
+  """
+  GARBAGE_RUN = False
+  
+  # Clear xml's
+  for file in glob.glob("*.xml"):
+    os.remove(file)
+  
+  if GARBAGE_RUN:
+    model.settings.particles = 500
+
+  # Number of batches
+  batches = model.settings.batches
+
+  # How to write the source into a file once converged.
+  source_name = f"source.{batches}.h5"
+  model.settings.sourcepoint = {
+    "batches": [batches], # write after the 1000th batch
+    "write": True, # Write = true
+    "separate": True # Write as a separate file
+  }
+
+  model.settings.output = {'tallies': False}
+
+  # If the source exists, lock and load it!
+  if Path(source_name).is_file():
+    logging.info("Source exists so we are changing the model's starting source!")
+    model.settings.source = openmc.FileSource(source_name)
+    
+  
+  model.export_to_xml()
+    
+  sp_path = f"statepoint.{batches}.h5"
+  
+  
+  logging.info(f"Now running transport with openmc.run() ... ")
+  # openmc.run()
+  openmc.run()
+  res = {}
+  
+  with openmc.StatePoint(sp_path) as sp:
+    tallies: list[openmc.Tally] = [sp.get_tally(id=tid) for tid in power_tally_ids]
+    res[batches] = [t.mean.item() for t in tallies]
+    the_str_dict = ""
+    for key in sp.runtime.keys():
+      the_str_dict += f"\t{str(key)}: {float(sp.runtime[key])} \n"
+    logging.info(f"\tThe step keff (Combined) = {sp.keff}", )
+    logging.info(f"\tThe runtime metrics are:\n {the_str_dict}")
+  os.remove(sp_path)
+  
+  return res
+
+
 
 """
 Gets depletion materials from the Model object 
@@ -533,3 +611,20 @@ def chain_from_pkl(file: str):
     else:
       return chain
 
+def get_norm_vs_time(res: Anderson | SIE, ref: Anderson | SIE, order: int = 2) -> np.ndarray[float]:
+  """
+  Gets the norm (difference) as a function of time.
+  """
+  all_norms = []
+  for t in ref.times:
+    try:
+      res._time_flag(t)
+    except:
+      break
+
+    xref = ref.x[t][-1]
+    xres = res.x[t][-1]
+
+    nrm = np.linalg.norm(xres-xref, ord=order) / np.linalg.norm(xref, ord=order)
+    all_norms.append(nrm)
+  return np.array(all_norms)

@@ -376,7 +376,7 @@ def get_model() -> openmc.Model:
   settings.source = source
   settings.batches = 1000
   settings.inactive = 500
-  settings.particles = 100000
+  settings.particles = 100 # 100000
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 
