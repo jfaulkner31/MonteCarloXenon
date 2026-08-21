@@ -121,8 +121,8 @@ class Anderson():
 
     Outputs
     =======
-    out : dict
-      dictionary of tallies by generation 
+    out : np.ndarray
+      fluxes result (normalized) 
     """
     theLength = res[0].__len__()
     shape0 = np.zeros(theLength)
@@ -430,7 +430,7 @@ Batch-by-batch transport simulation in OpenMC
 """
 def run_transport(model: openmc.Model, power_tally_ids: list):
   """runs an openmc transport calculation while doing batch-by-patch tallies"""
-  GARBAGE_RUN = False
+  GARBAGE_RUN = True
 
   # Clear xml's
   for file in glob.glob("*.xml"):
@@ -465,7 +465,7 @@ def run_transport_standard(model: openmc.Model, power_tally_ids: list):
   res : dict[int]->list[Tallies.mean()]
     res[batches]->openmc.Tallies object
   """
-  GARBAGE_RUN = False
+  GARBAGE_RUN = True
   
   # Clear xml's
   for file in glob.glob("*.xml"):

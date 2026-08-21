@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<settings>
+  <run_mode>eigenvalue</run_mode>
+  <particles>500</particles>
+  <batches>1000</batches>
+  <inactive>500</inactive>
+  <source type="file" strength="1.0" file="/Users/4yf/projects/MonteCarloXenon/openmc_aa/source.1000.h5"/>
+  <output>
+    <tallies>false</tallies>
+  </output>
+  <source_point>
+    <batches>1000</batches>
+    <separate>true</separate>
+    <write>true</write>
+  </source_point>
+</settings>

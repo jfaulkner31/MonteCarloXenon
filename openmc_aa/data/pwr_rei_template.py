@@ -7,6 +7,48 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openmc.deplete
 
+class PincellGeometry():
+  """
+  A simple class with hardcoded pincell geometries for use in calculations
+  """
+  def __init__(self):
+    self._fuel_r=0.3975
+    self._clad_ir=0.4125
+    self._clad_or=0.4750
+    self._pitch=1.26
+    self._height = 366
+    self._nzones = 16
+    self._dz=self._height/self._nzones
+
+  @property
+  def fuel_r(self):
+    return self._fuel_r
+
+  @property
+  def clad_ir(self):
+    return self._clad_ir
+
+  @property
+  def clad_or(self):
+    return self._clad_or
+
+  @property
+  def pitch(self):
+    return self._pitch
+
+  @property
+  def dz(self):
+    return self._dz
+
+  @property
+  def height(self):
+    return self._height
+
+  @property
+  def nzones(self):
+    return self._nzones
+
+
 class UO2Material():
   """
   UO2 openmc material
@@ -179,9 +221,8 @@ class LWRControlRod():
 
     self.zNeg.boundary_type='reflective'
 
-
-def get_model() -> openmc.Model:
-  densCurve = np.array([[13.039305966937505, 0.7546030708094662],
+def get_density_curve() -> np.ndarray[list[float]]:
+  return np.array([[13.039305966937505, 0.7546030708094662],
   [17.971143135616785, 0.7541532649090789],
   [22.902980304296058, 0.7536839022304138],
   [27.834817472975335, 0.7532145395517489],
@@ -253,6 +294,9 @@ def get_model() -> openmc.Model:
   [349.637192729298, 0.6970865858947254],
   [349.637192729298, 0.6956784978587304],
   [349.637192729298, 0.6928623217867403]])
+
+def get_model() -> openmc.Model:
+  densCurve = get_density_curve()
   bounds = np.linspace(0,366,17)
   xNew = bounds[0:-1]/2 + bounds[1:]/2
   yNew = np.interp(xNew, densCurve[:,0], densCurve[:,1])
