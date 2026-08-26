@@ -21,9 +21,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 logging.getLogger().setLevel(logging.DEBUG)
 
 from SIE import SIE
-from Anderson import run_transport, run_transport_standard, run_transport_for_chain, \
-  depletable_mats_from_model, get_nuclides_for_transport, make_transport_material_library, \
-  get_depletion_materials_from_results_EOS, chain_from_pkl
+from Anderson import run_transport, run_transport_for_chain, run_transport_standard
+
+from NuclideVectorMath import get_nuclides_for_transport, \
+    make_transport_material_library, \
+    get_depletion_materials_from_results_EOS, \
+    chain_from_pkl, \
+    depletable_mats_from_model, \
+    make_transport_material_library, \
+    relax_nuclides_from_files
 
 logging.info(f"Now running input....")
 
@@ -56,6 +62,7 @@ sie = SIE()
 RESULTS_TRANSPORT = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## transport w/ batch-by-batch tally tracking
 LATEST_FLUX = sie.get_final_tally(res=RESULTS_TRANSPORT, normalize_to=1.0)
 sie.finalize_bos(x=LATEST_FLUX)
+sie.dump_to_pkl(name=f'results/sie_i{0}_t{0}.pkl')
 
 """
 Now iterating through time.
@@ -89,11 +96,13 @@ for TIME_IDX, this_dt in enumerate(dt):
                        depl_mats=depletion_materials,
                        model=model, micro_xs=micro_xs,chain_file=chain_file,
                        dt=this_dt, power=power, depl_id_list=depl_id_list)
-
+    
     # track and update
     fx.append(copy.deepcopy(the_fx))  
     x.append(sie.get_relaxed_flux(fx=fx))
     LATEST_FLUX = copy.deepcopy(x[-1]) 
+    logging.info(f"The f(x) = {the_fx}")
+    logging.info(f"The x used to deplete = {x[-1]}")
 
   # Advances depletion material definitions to EOS values for the next BU step since we are now done iterating
   sie.finalize(time=the_eos_time, x=x, fx=fx)

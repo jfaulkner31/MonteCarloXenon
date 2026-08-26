@@ -15,6 +15,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from Colors import Colors, nice_grid, nice_legend
 import logging 
+from NuclideVectorMath import relax_nuclides_from_files
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
 
@@ -23,7 +24,7 @@ class SIE:
   Class that contains useful information 
   for doing stochastic implicit euler depletion
   """
-  def __init__(self):
+  def __init__(self, relax_N: bool, relax_F: bool):
     self._x:     dict[float: list[np.ndarray]] = {}      #  x[time] -> x (relaxed phi values from the robbins monro algo.)
     self._fx:    dict[float: list[np.ndarray]] = {}      # fx[time] -> fx (actual solves fromt transport)
 
@@ -32,16 +33,22 @@ class SIE:
     self._markers = ['s', 'x', 'd', '+', '^', '>', '<']*4
 
     # Depletion output name tracker
-    self._latest_depletion_output_name: str = None
+    self._latest_depletion_output: openmc.deplete.Results = None
+
+    # Relaxation settings
+    self._relax_N = relax_N
+    self._relax_F = relax_F
 
   """
   Properties
   """
   @property
-  def depl_output_name(self) -> str:
-    if self._latest_depletion_output_name is None:
-      raise Exception("self._latest_depletion_output_name is None --- has not been set yet oh noooo!s")
-    return self._latest_depletion_output_name
+  def depl_output(self) -> openmc.deplete.Results:
+    if self._latest_depletion_output is None:
+      raise Exception("self._latest_depletion_output is None --- has not been set yet oh noooo!s")
+    if not isinstance(self._latest_depletion_output, openmc.deplete.Results):
+      raise Exception("The latest depletion output is not type openmc.deplete.Results for some reason!")
+    return self._latest_depletion_output
   @property
   def x(self) -> dict[float: list[np.ndarray]]:
     return self._x
@@ -52,8 +59,8 @@ class SIE:
   def times(self) -> list[float]:
     return [float(key) for key in self._x.keys()]
 
-  def set_depl_output_name(self, name: str):
-    self._latest_depletion_output_name = name
+  def set_depl_output(self, name: openmc.deplete.Results):
+    self._latest_depletion_output = name
 
   def finalize(self, time: float, x: list[np.ndarray], fx: list[np.ndarray]):
     """
@@ -93,7 +100,7 @@ class SIE:
       out: SIE = pkl.load(f)
     self._x = out._x
     self._fx = out._fx
-    self._latest_depletion_output_name = out._latest_depletion_output_name
+    self._latest_depletion_output = out._latest_depletion_output
     return self
 
   def get_final_tally(self, res: dict, normalize_to: float = 1.0):
@@ -160,8 +167,6 @@ class SIE:
       power input to deplete with
     depl_id_list : list[int]
       list of depletion ids for depletion
-    depl_output_name : str
-      file name for the depletion EOS output.
 
     Outputs
     =======
@@ -169,18 +174,22 @@ class SIE:
       output result
     """
     # Name the depletion output
-    depl_output_name = f"depl_step_s{tidx+1}_i{iidx}.h5" # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
+    depl_output_name = self._get_depletion_output_name(iidx=iidx, tidx=tidx)
     
     # Perform depletion until EOS
     depl_flux = copy.deepcopy(x)
     op = openmc.deplete.IndependentOperator(depl_mats, depl_flux, micro_xs, chain_file=chain_file)
     openmc.deplete.PredictorIntegrator(op, timesteps=[dt], power=power, timestep_units='d').integrate(path=depl_output_name)
     
-    # Update the latest depletion output name internally
-    self.set_depl_output_name(depl_output_name)
+    # Update the latest depletion output information internally
+    self.set_depl_output(openmc.deplete.Results(depl_output_name))
+
+    # Relaxes the nuclide densities if applicable, sets the latest output internally as well
+    if self._relax_N:
+      self.set_depl_output(self.get_relaxed_n(iidx=iidx, tidx=tidx))
 
     from Anderson import make_transport_material_library
-    make_transport_material_library(output_name=depl_output_name, model=model, chain_file=chain_file)
+    make_transport_material_library(output_name=self.depl_output, model=model, chain_file=chain_file)
     
     # Results from transport 
     from Anderson import run_transport, run_transport_standard
@@ -190,7 +199,7 @@ class SIE:
 
   def get_relaxed_flux(self, fx: list[np.ndarray[float]]) -> np.ndarray[float]:
     """
-    Get relaxed flux from a list of fluxes using the robbins monro algorithm
+    Get relaxed flux from a list of fluxes using the weights.
     """
     if len(fx) == 0:
       raise Exception("Length of fx must be 1 or more!")
@@ -202,13 +211,99 @@ class SIE:
     new = new / np.sum(new) * norm_to
     return new
   
-  def _time_flag(self, t: float):
-    if t not in self.times:
-      raise ValueError(f"Time input of {t} is not ok / found in self.times!")
+  def get_relaxed_n(self, iidx: int, tidx: int):
+    """
+    Gets the relaxed EOS nuclide results based on previous files
+
+    Parameters
+    ==========
+    iidx : int
+      iteration index
+    tidx : int
+      iteration index
+
+    Returns
+    =======
+    results : openmc.deplete.Results
+      Results object representing the BOS and EOS nuclide densities where EOS have been relaxed.
+    """
+    from NuclideVectorMath import relax_nuclides_from_files
+
+    # Make the filenames from all results thus far
+    # NOTE: EOS Predictor Nuclide densities use iidx=0 so we ignore these.
+    # NOTE: the files we average are the depletion output name values f(x) values at the end of a depletion solve,
+    #       they are NOT the relaxed values.
+    # NOTE: in the robbins monro algorithm each depletion solve gets a constant weight.
+    files = [self._get_depletion_output_name(iidx=the_i, tidx=tidx) for the_i in range(1, iidx+1)]
+
+    # Make the weights based on the RM algorithm
+    weights = self._get_weights_RM(N=iidx)
+
+    # Get the relaxed Results based on a list of filenames.
+    results: openmc.deplete.Results = relax_nuclides_from_files()
+    return results
+
+
+
+  def _get_weights_RM(self, N: int) -> np.ndarray[tuple[int], float]:
+    """
+    How to weight each iterate in the RM style scheme.
+
+    Uses a uniform weight between each MC iterate/guess
+    
+    Parameters
+    ==========
+    N : int 
+      number of weights
+
+    Returns
+    =======
+    w : np.ndarray
+      weights (normalized to 1.0)
+    """
+    return np.ones(N)/N
+  
+  def _get_depletion_output_name(self, iidx: int, tidx: int) -> str:
+    """
+    Gets depletion output name
+
+    Parameters
+    ==========
+    iidx : int
+      iteration index
+    tidx : int
+      iteration index
+
+    Returns
+    =======
+    filename : str
+      name of the depletion h5 file
+
+    """
+    # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
+    depl_output_name = f"depl_step_s{tidx+1}_i{iidx}.h5" 
+    return depl_output_name
     
   """
   Plotting and analysis
   """
+  def _time_flag(self, t: float):
+    """
+    Checks time is valid
+
+    Parameters
+    ==========
+    t : float
+      the time
+    
+    Returns
+    =======
+    None
+
+    """    
+    if t not in self.times:
+      raise ValueError(f"Time input of {t} is not ok / found in self.times!")
+    
   def plot_x(self, time: float, dpi=100):
     """
     Plot the progression of x_next. NOT
