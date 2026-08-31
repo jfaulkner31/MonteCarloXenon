@@ -5,6 +5,7 @@ import os
 
 import openmc
 import openmc.deplete
+from pathlib import Path
 
 
 from NuclideVectorMath import depletable_mats_from_model

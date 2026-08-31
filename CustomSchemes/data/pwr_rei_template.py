@@ -296,12 +296,14 @@ def get_density_curve() -> np.ndarray[list[float]]:
   [349.637192729298, 0.6928623217867403]])
 
 def get_model() -> openmc.Model:
+  PLOT = False
   densCurve = get_density_curve()
   bounds = np.linspace(0,366,17)
   xNew = bounds[0:-1]/2 + bounds[1:]/2
   yNew = np.interp(xNew, densCurve[:,0], densCurve[:,1])
   plt.figure(figsize=(5,3))
-  plt.plot(xNew, yNew, 'ks--', markerfacecolor='white')
+  if PLOT:
+    plt.plot(xNew, yNew, 'ks--', markerfacecolor='white')
   plt.grid()
   print(xNew)
   densValues = yNew
@@ -393,7 +395,8 @@ def get_model() -> openmc.Model:
 
   # Plot the universe! Look at all those unique materials/cells!
   # Double check the thimbles are correctly laid out as well!
-  final_universe.plot(basis='xy', pixels=50000, origin=(0.0,0.0,366/2), color_by='material')
+  if PLOT:
+    final_universe.plot(basis='xy', pixels=50000, origin=(0.0,0.0,366/2), color_by='material')
 
   """Tallies"""
   talls = []
@@ -420,7 +423,7 @@ def get_model() -> openmc.Model:
   settings.source = source
   settings.batches = 1000
   settings.inactive = 500
-  settings.particles = 100 # 100000
+  settings.particles = 100000
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 

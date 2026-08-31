@@ -54,51 +54,59 @@ depletion_materials = depletable_mats_from_model(model=model) # get from startin
 depl_id_list = [this.id for this in depletion_materials]
 
 # Robbins Monro related
-nsolves = 4 # number of transport solves/solution
-sie = SIE(relax_N=False, relax_F=True)
+nsolves = 5 # number of transport solves/solution
+sie = SIE()
 
 
 """Start by performing t=0 transport"""
-sie.initialize_bos()
 RESULTS_TRANSPORT = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## transport w/ batch-by-batch tally tracking
 LATEST_FLUX = sie.get_final_tally(res=RESULTS_TRANSPORT, normalize_to=1.0)
-sie.set_bos_solution(x=LATEST_FLUX)
-sie.finalize_bos()
-sie.dump_to_pkl(name=f'sie_i{0}_t{0}.pkl')
+sie.finalize_bos(x=LATEST_FLUX)
+sie.dump_to_pkl(name=f'results/sie_i{0}_t{0}.pkl')
 
 """
 Now iterating through time.
 """
 the_eos_time = 0.0
-for _tidx, this_dt in enumerate(dt):
-  
+for TIME_IDX, this_dt in enumerate(dt):
   # Time
-  TIME_IDX = _tidx + 1
   the_eos_time += this_dt
-  sie.initialize_step(time=the_eos_time)
-  final_solve = False
+
+  # Set x and f(x)
+  x = [] # X values from relaxed robbins monro algorithm
+  fx = [] # Values from the actual transport solves (F(x)) --> fx
+
+  # Solve f(x0)
+  logging.info(f"Now running sie.solve, iidx={0}, TIME_IDX={TIME_IDX}, time_EOS={the_eos_time}")
+  the_fx = sie.solve(x = LATEST_FLUX, 
+                     tidx=TIME_IDX, iidx=0,
+                     depl_mats=depletion_materials,
+                     model=model, micro_xs=micro_xs,chain_file=chain_file,
+                     dt=this_dt, power=power, depl_id_list=depl_id_list)
+
+  # Track and update
+  fx.append(copy.deepcopy(the_fx))  
+  x.append(sie.get_relaxed_flux(fx=fx))
+  LATEST_FLUX = copy.deepcopy(x[-1]) 
 
   # Now iterate across solves.
-  for iidx in range(0, nsolves):
-    if iidx == nsolves-1:
-      final_solve = True
-    x = sie.solve(x=LATEST_FLUX, 
-                  tidx=TIME_IDX, iidx=iidx, time=the_eos_time,
-                  depl_mats=depletion_materials,
-                  model=model, micro_xs=micro_xs,chain_file=chain_file,
-                  dt=this_dt, power=power, depl_id_list=depl_id_list, final_solve=final_solve)
-    # TODO: make sure relaxation of the fluxes is carried out correctly here. [x]
-    # TODO: make sure that we are properly iterating power and the nuclide vector here. [x]
-    # TODO: make sure that we are correctly doing predictor separation here [x] 
-    # TODO: make sure that we can set nsolves to 1 and get the correct behavior here. [x]
-
+  for iidx in range(1, nsolves):
+    the_fx = sie.solve(x=LATEST_FLUX, 
+                       tidx=TIME_IDX, iidx=iidx,
+                       depl_mats=depletion_materials,
+                       model=model, micro_xs=micro_xs,chain_file=chain_file,
+                       dt=this_dt, power=power, depl_id_list=depl_id_list)
+    
     # track and update
-    LATEST_FLUX = copy.deepcopy(x) 
-
+    fx.append(copy.deepcopy(the_fx))  
+    x.append(sie.get_relaxed_flux(fx=fx))
+    LATEST_FLUX = copy.deepcopy(x[-1]) 
+    logging.info(f"The f(x) = {the_fx}")
+    logging.info(f"The x used to deplete = {x[-1]}")
 
   # Advances depletion material definitions to EOS values for the next BU step since we are now done iterating
-  sie.finalize()
-  sie.dump_to_pkl(name=f'results/sie_i{iidx}_t{TIME_IDX}.pkl')
+  sie.finalize(time=the_eos_time, x=x, fx=fx)
+  sie.dump_to_pkl(name=f'results/sie_i{iidx}_t{TIME_IDX+1}.pkl')
   depletion_materials = get_depletion_materials_from_results_EOS(output_name=sie.depl_output_name, model=model)
   
     
