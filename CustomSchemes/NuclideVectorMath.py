@@ -41,7 +41,7 @@ def get_nuclides_for_transport(chain_file: str, model: openmc.Model):
               if nuc.name in nuclides_with_data]
   return nuclides
 
-def make_transport_material_library(output_name: str | openmc.deplete.Results, model: openmc.Model, chain_file: str):
+def make_transport_material_library(output_name: str | openmc.deplete.Results | list[openmc.deplete.StepResult], model: openmc.Model, chain_file: str):
   """
   Function to take in a model, chain, and results file.
 
@@ -82,10 +82,17 @@ def make_transport_material_library(output_name: str | openmc.deplete.Results, m
   # new_lib.export_to_xml()
   model.materials = new_lib
 
-def _get_results_from_output_name(output_name: str | openmc.deplete.Results) -> openmc.deplete.Results:
+def _get_results_from_output_name(output_name: str | openmc.deplete.Results | list[openmc.deplete.StepResult]) -> openmc.deplete.Results:
   if isinstance(output_name, str):
     results = openmc.deplete.Results(output_name)
   elif isinstance(output_name, openmc.deplete.Results):
+    results = output_name
+  elif isinstance(output_name, list):
+    if isinstance(output_name[0], openmc.deplete.StepResult):
+      for idx, _ in enumerate(output_name):
+        assert isinstance(output_name[idx], openmc.deplete.StepResult), "Not every entry in the list was an openmc.deplete.StepResult"
+    else:
+      raise Exception("Output name was a list but the list did not contain openmc.deplete.StepResult's")
     results = output_name
   else:
     raise Exception("output_name must be either a string to a filename or a Results container already")
@@ -148,9 +155,12 @@ def relax_nuclides_from_files(files: list[str],
     "The weights and the files must have the same length!"
   
   ref_file = files[0]
-  ref_bos = copy.deepcopy(openmc.deplete.Results(ref_file)[0])
-  ref_eos: openmc.deplete.StepResult = copy.deepcopy(openmc.deplete.Results(ref_file)[-1])
+
+  ref_results = copy.deepcopy(openmc.deplete.Results(ref_file))
+  ref_bos = copy.deepcopy(ref_results[0])
+  ref_eos: openmc.deplete.StepResult = copy.deepcopy(ref_results[-1])
   ref_nuc_idxs = ref_eos.index_nuc # make sure these match for every step
+
   file_count = len(files)
   data = ref_eos.data
 
@@ -171,6 +181,12 @@ def relax_nuclides_from_files(files: list[str],
       " Jonathon needs to update the averaging procedure!"
     data += this_eos_result.data*weights[0]
     weights = weights[1:]
-    
-  results_post_relaxation: openmc.deplete.Results = [ref_bos, ref_eos]
-  return results_post_relaxation
+
+  ref_results.clear()
+  ref_results.append(ref_bos)
+  ref_results.append(ref_eos)
+  return ref_results
+
+"""
+Down here is dedicated to interpreting and averaging some step results.
+"""

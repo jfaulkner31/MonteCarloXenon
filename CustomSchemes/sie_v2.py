@@ -1,0 +1,104 @@
+import data.pwr_rei_template as pwr
+import openmc
+import openmc.deplete
+import numpy as np
+import copy
+import pickle as pkl
+import glob
+import os
+import sys
+import shutil
+from pathlib import Path
+import matplotlib.pyplot as plt
+
+openmc.deplete.pool.USE_MULTIPROCESSING=False
+
+"""
+Setup logging
+"""
+import logging 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s', filemode='a', filename="LOGGING.LOG")
+logging.getLogger().setLevel(logging.DEBUG)
+
+from SIE import SIE
+from TransportMath import run_transport, run_transport_for_chain, run_transport_standard
+
+from NuclideVectorMath import get_nuclides_for_transport, \
+    make_transport_material_library, \
+    get_depletion_materials_from_results_EOS, \
+    chain_from_pkl, \
+    depletable_mats_from_model, \
+    make_transport_material_library, \
+    relax_nuclides_from_files
+
+logging.info(f"Now running input....")
+
+
+# Input stuff
+micro_xs = chain_from_pkl(file='data/FINAL_CHAIN.pkl') # get xs from a reference file
+chain_file = 'data/chain_casl_pwr.xml'
+results_folder = 'results'
+dt = [0.5, 1, 1.5, 2, 5, 10, 10, 10, 10,
+25, 25, 25, 25,
+25, 25, 25, 25,
+25, 25, 25, 25] # up to 350 days
+model = pwr.get_model()
+
+# Computing the power density to use
+fuel_r=0.3975
+power_density = 104
+power = power_density * 366  * np.pi * fuel_r**2
+
+# Random stuff - non-strictly-input-based
+depletion_materials = depletable_mats_from_model(model=model) # get from starting model
+depl_id_list = [this.id for this in depletion_materials]
+
+# Robbins Monro related
+nsolves = 4 # number of transport solves/solution
+sie = SIE(relax_N=False, relax_F=True)
+
+
+"""Start by performing t=0 transport"""
+sie.initialize_bos()
+RESULTS_TRANSPORT = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## transport w/ batch-by-batch tally tracking
+LATEST_FLUX = sie.get_final_tally(res=RESULTS_TRANSPORT, normalize_to=1.0)
+sie.set_bos_solution(x=LATEST_FLUX)
+sie.finalize_bos()
+sie.dump_to_pkl(name=f'sie_i{0}_t{0}.pkl')
+
+"""
+Now iterating through time.
+"""
+the_eos_time = 0.0
+for _tidx, this_dt in enumerate(dt):
+  
+  # Time
+  TIME_IDX = _tidx + 1
+  the_eos_time += this_dt
+  sie.initialize_step(time=the_eos_time)
+  final_solve = False
+
+  # Now iterate across solves.
+  for iidx in range(0, nsolves):
+    if iidx == nsolves-1:
+      final_solve = True
+    x = sie.solve(x=LATEST_FLUX, 
+                  tidx=TIME_IDX, iidx=iidx, time=the_eos_time,
+                  depl_mats=depletion_materials,
+                  model=model, micro_xs=micro_xs,chain_file=chain_file,
+                  dt=this_dt, power=power, depl_id_list=depl_id_list, final_solve=final_solve)
+    # TODO: make sure relaxation of the fluxes is carried out correctly here. [x]
+    # TODO: make sure that we are properly iterating power and the nuclide vector here. [x]
+    # TODO: make sure that we are correctly doing predictor separation here [x] 
+    # TODO: make sure that we can set nsolves to 1 and get the correct behavior here. [x]
+
+    # track and update
+    LATEST_FLUX = copy.deepcopy(x) 
+
+
+  # Advances depletion material definitions to EOS values for the next BU step since we are now done iterating
+  sie.finalize()
+  sie.dump_to_pkl(name=f'results/sie_i{iidx}_t{TIME_IDX}.pkl')
+  depletion_materials = get_depletion_materials_from_results_EOS(output_name=sie.depl_output_name, model=model)
+  
+    

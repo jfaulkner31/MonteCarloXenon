@@ -1,7 +1,6 @@
 """
-Stochastic implicit euler class for depletion
+Imports and related stuffs
 """
-
 import data.pwr_rei_template as pwr
 import openmc
 import openmc.deplete
@@ -15,40 +14,40 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from Colors import Colors, nice_grid, nice_legend
 import logging 
-from NuclideVectorMath import relax_nuclides_from_files
+from SIE import SIE
+from NuclideVectorMath import *
+
+
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
-
-class SIE:
+"""
+Anderson acceleration
+depletion schemes with 
+implicit Euler timestepping
+"""
+class Anderson():
   """
   Class that contains useful information 
-  for doing stochastic implicit euler depletion
+  for doing anderson acceleration depletion
   """
-  def __init__(self, relax_N: bool, relax_F: bool):
-    self._x:     dict[float: list[np.ndarray]] = {}      #  x[time] -> x (relaxed phi values from the robbins monro algo.)
-    self._fx:    dict[float: list[np.ndarray]] = {}      # fx[time] -> fx (actual solves fromt transport)
+  def __init__(self):
+    self._x:     dict[float: list[np.ndarray]] = {}      #  x[time] -> x
+    self._fx:    dict[float: list[np.ndarray]] = {}      # fx[time] -> fx
+    self._g:     dict[float: list[np.ndarray]] = {}      #  g[time] -> g
+    self._k: dict[float: int] = {}
+    self._latest_depletion_output_name: str = None 
 
     # Plotting and analysis settings for consistency
     self._colors = [Colors.colors()+Colors.colors2()][0]*2
     self._markers = ['s', 'x', 'd', '+', '^', '>', '<']*4
 
-    # Depletion output name tracker
-    self._latest_depletion_output: openmc.deplete.Results = None
-
-    # Relaxation settings
-    self._relax_N = relax_N
-    self._relax_F = relax_F
 
   """
-  Properties
+  Class getters
   """
-  @property
-  def depl_output(self) -> openmc.deplete.Results:
-    if self._latest_depletion_output is None:
-      raise Exception("self._latest_depletion_output is None --- has not been set yet oh noooo!s")
-    if not isinstance(self._latest_depletion_output, openmc.deplete.Results):
-      raise Exception("The latest depletion output is not type openmc.deplete.Results for some reason!")
-    return self._latest_depletion_output
+  @property 
+  def times(self) -> list[float]:
+    return [float(key) for key in self._x.keys()]
   @property
   def x(self) -> dict[float: list[np.ndarray]]:
     return self._x
@@ -56,20 +55,21 @@ class SIE:
   def fx(self) -> dict[float: list[np.ndarray]]:
     return self._fx
   @property
-  def times(self) -> list[float]:
-    return [float(key) for key in self._x.keys()]
-
-  def set_depl_output(self, name: openmc.deplete.Results):
-    self._latest_depletion_output = name
-
-  def finalize(self, time: float, x: list[np.ndarray], fx: list[np.ndarray]):
-    """
-    Finalizes results after a timestep.
-    """
-    self._x[time] = x
-    self._fx[time] = fx
-
-  def finalize_bos(self, x: np.ndarray[float]):
+  def g(self) -> dict[float: list[np.ndarray]]:
+    return self._g
+  @property
+  def k(self) -> dict[float: int]:
+    return self._k
+  @property
+  def depl_output_name(self) -> str:
+    if self._latest_depletion_output_name is None:
+      raise Exception("self._latest_depletion_output_name is None --- has not been set yet oh noooo!s")
+    return self._latest_depletion_output_name
+  
+  """
+  Class methods for computing
+  """
+  def finalize_bos(self, x: np.ndarray):
     """
     Finalizes the BOS results
     
@@ -78,7 +78,23 @@ class SIE:
     x : np.ndarray
       1d np array for the BOS fluxes (x0)
     """
-    self.finalize(time=0.0, x=[copy.deepcopy(x)], fx=[copy.deepcopy(x)])
+    self.finalize(time=0.0, x=[x], fx=[], g=[], k=-1)
+
+  def finalize(self, 
+               time: float, 
+               x: list[np.ndarray], 
+               fx: list[np.ndarray], 
+               g: list[np.ndarray], 
+               k: int):
+    """
+    Finalizes results after a timestep.
+    """
+    if time in self.times:
+      raise Exception("Time already in self.times, cannot overwrite.")
+    self._x[time] = x
+    self._fx[time] = fx
+    self._g[time] = g
+    self._k[time] = k
 
   def dump_to_pkl(self, name: str):
     """
@@ -91,17 +107,6 @@ class SIE:
     """
     with open(name, "wb") as file:
       pkl.dump(self, file)
-
-  def get_from_pkl(self, file: str):
-    """
-    Returns a SIE object from a pkl file.
-    """
-    with open(file, 'rb') as f:
-      out: SIE = pkl.load(f)
-    self._x = out._x
-    self._fx = out._fx
-    self._latest_depletion_output = out._latest_depletion_output
-    return self
 
   def get_final_tally(self, res: dict, normalize_to: float = 1.0):
     """
@@ -119,13 +124,48 @@ class SIE:
 
     Outputs
     =======
+    out : np.ndarray
+      fluxes result (normalized) 
+    """
+    theLength = res[0].__len__()
+    shape0 = np.zeros(theLength)
+    d = {}
+    """nice little function to get the very last tally"""
+    maxx = max(list(res.keys()))
+    for key in [maxx]: # Cheat code to just get the last generation tall
+      shape1 = np.array([ this[:,:,1][0][0] for this in res[key][0:theLength] ])
+    shape1 = shape1/np.sum(shape1) * normalize_to
+    return shape1
+  
+  def tally_by_gen(self, res: dict):
+    """
+    Description
+    ===========
+    Take in results from a batch-wise transport calculation
+    and outputs tallies by generation
+    
+    Parameters
+    ==========
+    res : dict 
+      results obtained from run_transport()
+
+    Outputs
+    =======
     out : dict
       dictionary of tallies by generation 
     """
-    maxx = max(list(res.keys()))
-    shape1 = np.array(res[maxx])    
-    return shape1/np.sum(shape1) * normalize_to
-  
+    theLength = res[0].__len__()
+    shape0 = np.zeros(theLength)
+    d = {}
+    """nice little function to get tallies by gen"""
+    for key in res.keys():
+      shape1 = np.array([ this[:,:,1][0][0] for this in res[key][0:theLength] ])
+      shape = shape1 - shape0
+      d[key] = shape
+      # advance
+      shape0 = shape1
+    return d
+
   def solve(self, 
             x: np.ndarray,
             tidx: int,
@@ -167,6 +207,8 @@ class SIE:
       power input to deplete with
     depl_id_list : list[int]
       list of depletion ids for depletion
+    depl_output_name : str
+      file name for the depletion EOS output.
 
     Outputs
     =======
@@ -174,139 +216,46 @@ class SIE:
       output result
     """
     # Name the depletion output
-    depl_output_name = self._get_depletion_output_name(iidx=iidx, tidx=tidx)
+    depl_output_name = f"depl_step_s{tidx+1}_i{iidx}.h5" # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
     
     # Perform depletion until EOS
     depl_flux = copy.deepcopy(x)
     op = openmc.deplete.IndependentOperator(depl_mats, depl_flux, micro_xs, chain_file=chain_file)
     openmc.deplete.PredictorIntegrator(op, timesteps=[dt], power=power, timestep_units='d').integrate(path=depl_output_name)
     
-    # Update the latest depletion output information internally
-    self.set_depl_output(openmc.deplete.Results(depl_output_name))
+    # Update the latest depletion output name internally
+    self.set_depl_output_name(depl_output_name)
 
-    # Relaxes the nuclide densities if applicable, sets the latest output internally as well
-    if self._relax_N:
-      self.set_depl_output(self.get_relaxed_n(iidx=iidx, tidx=tidx))
-
-    from Anderson import make_transport_material_library
-    make_transport_material_library(output_name=self.depl_output, model=model, chain_file=chain_file)
+    make_transport_material_library(output_name=depl_output_name, model=model, chain_file=chain_file)
     
     # Results from transport 
-    from Anderson import run_transport, run_transport_standard
-    tr_dict = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
+    tr_dict = run_transport(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
     fx = self.get_final_tally(res=tr_dict, normalize_to=1.0)
     return fx
-
-  def get_relaxed_flux(self, fx: list[np.ndarray[float]]) -> np.ndarray[float]:
-    """
-    Get relaxed flux from a list of fluxes using the weights.
-    """
-    if len(fx) == 0:
-      raise Exception("Length of fx must be 1 or more!")
-    new = np.zeros(len(fx[0]), dtype=float)
-    norm_to = np.sum(fx[0])
-    for this in fx:
-      new += this
-    
-    new = new / np.sum(new) * norm_to
-    return new
   
-  def get_relaxed_n(self, iidx: int, tidx: int):
-    """
-    Gets the relaxed EOS nuclide results based on previous files
-
-    Parameters
-    ==========
-    iidx : int
-      iteration index
-    tidx : int
-      iteration index
-
-    Returns
-    =======
-    results : openmc.deplete.Results
-      Results object representing the BOS and EOS nuclide densities where EOS have been relaxed.
-    """
-    from NuclideVectorMath import relax_nuclides_from_files
-
-    # Make the filenames from all results thus far
-    # NOTE: EOS Predictor Nuclide densities use iidx=0 so we ignore these.
-    # NOTE: the files we average are the depletion output name values f(x) values at the end of a depletion solve,
-    #       they are NOT the relaxed values.
-    # NOTE: in the robbins monro algorithm each depletion solve gets a constant weight.
-    files = [self._get_depletion_output_name(iidx=the_i, tidx=tidx) for the_i in range(1, iidx+1)]
-
-    # Make the weights based on the RM algorithm
-    weights = self._get_weights_RM(N=iidx)
-
-    # Get the relaxed Results based on a list of filenames.
-    results: openmc.deplete.Results = relax_nuclides_from_files()
-    return results
+  def set_depl_output_name(self, name: str):
+    self._latest_depletion_output_name = name
 
 
-
-  def _get_weights_RM(self, N: int) -> np.ndarray[tuple[int], float]:
-    """
-    How to weight each iterate in the RM style scheme.
-
-    Uses a uniform weight between each MC iterate/guess
-    
-    Parameters
-    ==========
-    N : int 
-      number of weights
-
-    Returns
-    =======
-    w : np.ndarray
-      weights (normalized to 1.0)
-    """
-    return np.ones(N)/N
-  
-  def _get_depletion_output_name(self, iidx: int, tidx: int) -> str:
-    """
-    Gets depletion output name
-
-    Parameters
-    ==========
-    iidx : int
-      iteration index
-    tidx : int
-      iteration index
-
-    Returns
-    =======
-    filename : str
-      name of the depletion h5 file
-
-    """
-    # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
-    depl_output_name = f"depl_step_s{tidx+1}_i{iidx}.h5" 
-    return depl_output_name
-    
   """
-  Plotting and analysis
+  Class methods for analysis 
   """
-  def _time_flag(self, t: float):
+  def get_from_pkl(self, file: str):
     """
-    Checks time is valid
+    Returns an Anderson object from a pickle file.
+    """
+    with open(file, 'rb') as f:
+      out: Anderson = pkl.load(f)
+    self._x = out._x
+    self._fx = out._fx
+    self._g = out._g
+    self._k = out._k
+    self._latest_depletion_output_name = out._latest_depletion_output_name
+    return self
 
-    Parameters
-    ==========
-    t : float
-      the time
-    
-    Returns
-    =======
-    None
-
-    """    
-    if t not in self.times:
-      raise ValueError(f"Time input of {t} is not ok / found in self.times!")
-    
   def plot_x(self, time: float, dpi=100):
     """
-    Plot the progression of x_next. NOT
+    Plot the progression of x_next
     including the initial condition
 
     Parameters
@@ -327,11 +276,23 @@ class SIE:
     nice_legend()
     nice_grid()
 
-  def plot_fx(self, time: float, dpi=100):
+  def plot_final_x(self, time: float, label: str, dpi=100, coloridx: int = 0):
+    c = coloridx
+    self._time_flag(t=time)
+
+    plt.figure(figsize=(5,3), dpi=dpi)
+    plt.plot(self._x[time][-1], '-', markerfacecolor='none', label=label, color=self._colors[c], marker=self._markers[c], markersize=4, mew=0.7, lw=0.7)
+    
+    plt.xlabel('Fissionable zone index')
+    plt.ylabel('Flux (normalized)')
+    nice_legend()
+    nice_grid()
+
+
+  def plot_fx(self, time: float, dpi=100, include_xfinal: bool = True, include_average: bool = True):
     """
-    Plot the progression of f(x) NOT
-    including the initial condition.
-    f(x) is the transport tallies where x_n+1 = TRANSPORT(CORRECTOR(X_n))
+    Plot the progression of x_next
+    including the initial condition
 
     Parameters
     ==========
@@ -339,13 +300,26 @@ class SIE:
       the time 
     dpi : int   
       image dpi
+    include_xfinal : bool
+      whether or not to include the final x_next value (the final guess)
+    include_average : bool
+      whether or not to include the average result
     """
     self._time_flag(t=time)
 
     plt.figure(figsize=(5,3), dpi=dpi)
     for c, x in enumerate(self._fx[time]):
-      plt.plot(x, '-', markerfacecolor='none', label=f'$f(x_{c})$', color=self._colors[c], marker=self._markers[c], markersize=4, mew=0.7, lw=0.7)
-    
+      plt.plot(x, '-', markerfacecolor='none', label=f'$fx_{c}$', color=self._colors[c], marker=self._markers[c], markersize=4, mew=0.7, lw=0.7)
+    if include_xfinal:
+      plt.plot(self._x[time][-1], 'kx--', label=r'$x_\mathrm{final}$', mew=0.7, lw=0.7, markersize=3)
+    if include_average:
+      avg = np.zeros(len(self._fx[time][0]))
+      for v in self._fx[time]:
+        avg += v
+      avg = avg / len(self._fx[time])
+      plt.plot(avg / sum(avg) * sum(self._fx[time][0]), 'rs', label=r'$\mathrm{AVG(}f(x)\mathrm{)}$', mew=0.7, lw=0.7, markerfacecolor='none', markersize=2)
+
+
     plt.xlabel('Fissionable zone index')
     plt.ylabel('Flux (normalized)')
     nice_legend()
@@ -430,4 +404,33 @@ class SIE:
     plt.ylabel(f'L{order} norm for f(x)')
 
     print(f"L{order} = {g}")
+
+  """
+  Other
+  """
+  def _time_flag(self, t: float):
+    if t not in self.times:
+      raise ValueError(f"Time input of {t} is not ok / found in self.times!")
+
+"""
+Processing norms with time
+"""
+def get_norm_vs_time(res: Anderson | SIE, ref: Anderson | SIE, order: int = 2) -> np.ndarray[float]:
+  
+  """
+  Gets the norm (difference) as a function of time.
+  """
+  all_norms = []
+  for t in ref.times:
+    try:
+      res._time_flag(t)
+    except:
+      break
+
+    xref = ref.x[t][-1]
+    xres = res.x[t][-1]
+
+    nrm = np.linalg.norm(xres-xref, ord=order) / np.linalg.norm(xref, ord=order)
+    all_norms.append(nrm)
+  return np.array(all_norms)
 

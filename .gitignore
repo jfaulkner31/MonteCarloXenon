@@ -4,3 +4,5 @@
 pixi*
 *.h5
 cramTesting.ipynb
+*.LOG
+CustomSchemes/*.pkl
