@@ -5,7 +5,7 @@ failures = []
 """
 Testing cram
 """
-from cram import *
+from CustomSchemes.CRAM.cram import *
 
 """Test 1 - Test depletion"""
 print("NOW RUNNING TEST 1")
@@ -37,7 +37,7 @@ Testing MC
 """
 
 """Test 2 - critical slab"""
-from MonteCarlo import *
+from CustomSchemes.CRAM.MonteCarlo import *
 print("NOW RUNNING TEST 2")
 print("--------------------------------------------")
 matCritical = Material(s=0.01, a=1, nu=1, f=1)

@@ -1,0 +1,7 @@
+numpy<3,>=2.0.0
+pytest<9,>=8.4.2
+matplotlib<4,>=3.10.6
+scipy<2,>=1.16.2
+openmc<0.16,>=0.15.3
+ipykernel<8,>=7.3.0
+pip<27,>=26.1.2

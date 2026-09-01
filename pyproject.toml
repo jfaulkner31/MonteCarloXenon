@@ -1,0 +1,28 @@
+[project]
+requires-python = ">= 3.8"
+name = "CustomSchemes"
+version = "0.1.0"
+authors = [
+  {name = "Jonathon Faulkner", email = "jfaulkner31@gatech.edu"}
+]
+description = "Custom and experimental depletion schemes in OpenMC."
+
+dependencies=[
+  "numpy>=2.0.0,<3",
+  "pytest>=8.4.2,<9",
+  "matplotlib>=3.10.6,<4",
+  "scipy>=1.16.2,<2",
+  "openmc>=0.15.3,<0.16",
+  "ipykernel>=7.3.0,<8",
+  "pip>=26.1.2,<27"
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."} # flat layout
+
+[tool.setuptools.packages.find]
+include = ["CustomSchemes"]

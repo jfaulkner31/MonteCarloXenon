@@ -1,0 +1,9 @@
+This is from:
+
+FLUX.pkl:    /scratch/fauljona/openmc_RM_SIE/flux 
+NUCLIDE.pkl: /scratch/fauljona/openmc_RM_SIE/nuclide 
+
+Robbins Monro scheme with 4 solves for flux and nuclide.
+1000 total | 500 inactive | 100k per generation
+
+This takes about 20 minutes per timestep.

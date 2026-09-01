@@ -18,13 +18,12 @@ import logging
 from NuclideVectorMath import relax_nuclides_from_files
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
-
 class SIE:
   """
   Class that contains useful information 
   for doing stochastic implicit euler depletion
   """
-  def __init__(self, relax_N: bool, relax_F: bool):
+  def __init__(self, relax_N: bool = None, relax_F: bool = None):
     self._x:     dict[float: list[np.ndarray]] = {}      #  x[time] -> x (relaxed phi values from the robbins monro algo.)
     self._fx:    dict[float: list[np.ndarray]] = {}      # fx[time] -> fx (actual solves fromt transport)
 
@@ -171,6 +170,12 @@ class SIE:
     self._x = out._x
     self._fx = out._fx
     self._latest_depletion_output = out._latest_depletion_output
+    self._relax_F = out._relax_F
+    self._relax_N = out._relax_N
+
+    self._gN = out._gN
+    self._pN = out._pN
+    self._N  = out._N
     return self
 
   def get_final_tally(self, res: dict, normalize_to: float = 1.0):
@@ -645,7 +650,7 @@ class SIE:
 
   def get_gN_by_iteration(self, time: float, nuc: str):
     """
-    Gets relaxed version of N by iteration.
+    Gets unrelaxed version of N by iteration at a given point in time.
     This is the nuclide vector used after relaxation is performed.
 
     Parameters
@@ -666,7 +671,7 @@ class SIE:
   
   def get_N_by_iteration(self, time: float, nuc: str):
     """
-    Gets unrelaxed version of N by iteration.
+    Gets relaxed version of N by iteration at a given point in time
     This is the nuclide vector used after relaxation is performed.
 
     Parameters
@@ -687,8 +692,9 @@ class SIE:
 
   def get_N_by_time(self, nuc: str):
     """
-    Gets relaxed nuclides (final solution)
-    for a given timestep.
+    Gets relaxed nuclides (final solution) for all timesteps
+
+    If relax_N is not on, returns the gN solution.
 
     Parameters
     ==========
@@ -704,13 +710,48 @@ class SIE:
     """
     time_vec = []
     the_N_list = []
-    for time in self._N.keys():
-      if len(self._N[time]) > 0:
-        assert isinstance(self._N[time][0], openmc.deplete.StepResult), "zeroth entry is not step result"
+    if self._relax_N:
+      the_N = self._N
+    else:
+      the_N = self._gN
+    for time in the_N.keys():
+      if len(the_N[time]) > 0:
+        assert isinstance(the_N[time][0], openmc.deplete.StepResult), "zeroth entry is not step result"
         time_vec.append(time)
-        the_N_list.append(self._N[time][-1])
+        the_N_list.append(the_N[time][-1])
     return time_vec, self.__get_mats_from_step_result_list(nuc=nuc, the_N_list=the_N_list)
-    
+
+  def get_Nmat_by_time(self, nuc: str, mat_name: str) -> np.ndarray[tuple[int], np.float64]:
+    """
+    Gets relaxed nuclides (final solution) for all timesteps for a given material name
+
+    If relax_N is not on, returns the gN solution.
+
+    Parameters
+    ==========
+    time : float
+      the EOS time
+
+    Returns
+    =======
+    nuclides : dict
+      dict[ time: dict[mat_name: value] ]
+    time : list[float]
+      the timesteps
+    name : str
+      the name of the material - e.g. '11'
+    """
+    t, n = self.get_N_by_time(nuc=nuc)
+    out = []
+    for step in n.keys():
+      assert mat_name in n[step].keys(), f"The mat name {mat_name} is not a material key name for step = {step}"
+      out.append(n[step][mat_name])
+    return t, np.array(out)
+
+  def get_Nnames(self):
+    """returns the names of the materials"""
+    return list(self._gN[ list(self._gN.keys())[0] ][0].index_mat.keys())
+
   def __get_mats_from_step_result_list(self, nuc: str, the_N_list: list[openmc.deplete.StepResult]):
     """
     Gets a dictionary of mats by iteration.
@@ -746,3 +787,10 @@ class SIE:
       out[it] = the_mat_list
     return out
 
+def load_SIE(file: str) -> SIE:
+  """
+  Returns a SIE object from a pkl file.
+  """
+  with open(file, 'rb') as f:
+    out = pkl.load(f)
+  return out
