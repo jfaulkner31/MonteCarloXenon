@@ -8,7 +8,7 @@ import openmc.deplete
 from pathlib import Path
 
 
-from NuclideVectorMath import depletable_mats_from_model
+from CustomSchemes.NuclideVectorMath import depletable_mats_from_model
 
 """
 COMPUTATIONAL METHODS 
