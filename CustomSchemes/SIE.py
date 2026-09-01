@@ -2,7 +2,7 @@
 Stochastic implicit euler class for depletion
 """
 
-import data.pwr_rei_template as pwr
+import CustomSchemes.data.pwr_rei_template as pwr
 import openmc
 import openmc.deplete
 import numpy as np
@@ -13,9 +13,9 @@ import os
 import shutil
 from pathlib import Path
 import matplotlib.pyplot as plt
-from Colors import Colors, nice_grid, nice_legend
+from CustomSchemes.Colors import Colors, nice_grid, nice_legend
 import logging 
-from NuclideVectorMath import relax_nuclides_from_files
+from CustomSchemes.NuclideVectorMath import relax_nuclides_from_files
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
 class SIE:

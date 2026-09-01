@@ -1,3 +1,25 @@
+Installation
+============
+
+Installation: 
+
+to install run:
+
+conda create --name schemes python=3.11
+
+conda activate schemes
+
+conda install pip
+
+conda install openmc
+
+pip install -e .
+
+Then you should be able to run the module from anywhere on the HPC system!
+
+Other
+=====
+
 1D monte carlo code with point depletion code
 
 Goal - simulate 1g monte carlo transport. 
@@ -14,3 +36,4 @@ For more details on the MicroXS class, including how to use OpenMC’s transport
 See:
 Book: Monte Carlo Methods by J. M. Hammersley & D. C. Handscomb
 PhD: ROBUST MONTE CARLO METHODS FOR LIGHT TRANSPORT SIMULATION (Stanford PhD)
+
