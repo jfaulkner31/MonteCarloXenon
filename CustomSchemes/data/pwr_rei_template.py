@@ -295,7 +295,7 @@ def get_density_curve() -> np.ndarray[list[float]]:
   [349.637192729298, 0.6956784978587304],
   [349.637192729298, 0.6928623217867403]])
 
-def get_model() -> openmc.Model:
+def get_model(do_low_fidelity: bool = False) -> openmc.Model:
   PLOT = False
   densCurve = get_density_curve()
   bounds = np.linspace(0,366,17)
@@ -423,7 +423,10 @@ def get_model() -> openmc.Model:
   settings.source = source
   settings.batches = 1000
   settings.inactive = 500
-  settings.particles = 100000
+  if do_low_fidelity:
+    settings.particles = 100000
+  else:
+    settings.particles = 500
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 

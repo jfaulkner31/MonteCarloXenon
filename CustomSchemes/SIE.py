@@ -376,7 +376,7 @@ class SIE:
     make_transport_material_library(output_name=self.depl_output, model=model, chain_file=chain_file)
     
     # Results from transport 
-    from TransportMath import run_transport, run_transport_standard
+    from CustomSchemes.TransportMath import run_transport, run_transport_standard
     tr_dict = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
     fx = self.get_final_tally(res=tr_dict, normalize_to=1.0)
     return fx
