@@ -372,7 +372,7 @@ class SIE:
     depl_id_list : list[int]
       list of depletion ids. we use depletion ids for collecting tallies for fluxes from transport
     """
-    from NuclideVectorMath import make_transport_material_library
+    from CustomSchemes.NuclideVectorMath import make_transport_material_library
     make_transport_material_library(output_name=self.depl_output, model=model, chain_file=chain_file)
     
     # Results from transport 
@@ -422,7 +422,7 @@ class SIE:
     results : openmc.deplete.Results
       Results object representing the BOS and EOS nuclide densities where EOS have been relaxed.
     """
-    from NuclideVectorMath import relax_nuclides_from_files
+    from CustomSchemes.NuclideVectorMath import relax_nuclides_from_files
 
     assert iidx > 0, "iidx must be greater than 0 to relax the nucldies. " \
                      "We do not relax nuclides from the predictor calculations!"
