@@ -20,10 +20,10 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s', filemode='a', filename="LOGGING.LOG")
 logging.getLogger().setLevel(logging.DEBUG)
 
-from SIE import SIE
-from TransportMath import run_transport, run_transport_for_chain, run_transport_standard
+from CustomSchemes.SIE import SIE
+from CustomSchemes.TransportMath import run_transport, run_transport_for_chain, run_transport_standard
 
-from NuclideVectorMath import get_nuclides_for_transport, \
+from CustomSchemes.NuclideVectorMath import get_nuclides_for_transport, \
     make_transport_material_library, \
     get_depletion_materials_from_results_EOS, \
     chain_from_pkl, \
@@ -56,6 +56,10 @@ depl_id_list = [this.id for this in depletion_materials]
 # Robbins Monro related
 nsolves = 4 # number of transport solves/solution
 sie = SIE(relax_N=False, relax_F=True)
+
+"""Make the results folder"""
+Path("results").mkdir(parents=True, exist_ok=True)
+Path("depl_results").mkdir(parents=True, exist_ok=True)
 
 
 """Start by performing t=0 transport"""

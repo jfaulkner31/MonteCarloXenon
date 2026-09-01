@@ -492,7 +492,7 @@ class SIE:
 
     """
     # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
-    depl_output_name = f"depl_step_s{tidx}_i{iidx}.h5" 
+    depl_output_name = f"depl_results/depl_step_s{tidx}_i{iidx}.h5" 
     return depl_output_name
     
   """
