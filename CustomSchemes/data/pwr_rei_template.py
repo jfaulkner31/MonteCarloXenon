@@ -424,9 +424,9 @@ def get_model(do_low_fidelity: bool = False) -> openmc.Model:
   settings.batches = 1000
   settings.inactive = 500
   if do_low_fidelity:
-    settings.particles = 100000
-  else:
     settings.particles = 500
+  else:
+    settings.particles = 100000
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 
