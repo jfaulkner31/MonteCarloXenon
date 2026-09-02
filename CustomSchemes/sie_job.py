@@ -1,4 +1,4 @@
-import data.pwr_rei_template as pwr
+import CustomSchemes.data.pwr_rei_template as pwr
 import openmc
 import openmc.deplete
 import numpy as np
@@ -37,7 +37,7 @@ logging.info(f"Now running input....")
 # Input stuff
 micro_xs = chain_from_pkl(file='/scratch/fauljona/openmc_RM_SIE/data/FINAL_CHAIN.pkl') # get xs from a reference file
 chain_file = '/scratch/fauljona/openmc_RM_SIE/data/chain_casl_pwr.xml'
-results_folder = 'results'
+
 dt = [0.5, 1, 1.5, 2, 5, 10, 10, 10, 10,
 25, 25, 25, 25,
 25, 25, 25, 25,

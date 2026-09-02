@@ -301,8 +301,8 @@ def get_model(do_low_fidelity: bool = False) -> openmc.Model:
   bounds = np.linspace(0,366,17)
   xNew = bounds[0:-1]/2 + bounds[1:]/2
   yNew = np.interp(xNew, densCurve[:,0], densCurve[:,1])
-  plt.figure(figsize=(5,3))
   if PLOT:
+    plt.figure(figsize=(5,3))
     plt.plot(xNew, yNew, 'ks--', markerfacecolor='white')
   plt.grid()
   print(xNew)

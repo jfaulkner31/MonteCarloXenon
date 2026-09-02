@@ -6,3 +6,4 @@ pixi*
 cramTesting.ipynb
 *.LOG
 CustomSchemes/*.pkl
+CustomSchemesAnalysis/SIE_scheme/results

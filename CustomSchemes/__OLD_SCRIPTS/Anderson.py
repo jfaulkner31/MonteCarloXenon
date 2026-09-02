@@ -13,7 +13,7 @@ import shutil
 import matplotlib.pyplot as plt
 from Colors import Colors, nice_grid, nice_legend
 import logging 
-from SIE import SIE
+# from SIE import SIE
 from NuclideVectorMath import *
 
 
@@ -410,26 +410,3 @@ class Anderson():
   def _time_flag(self, t: float):
     if t not in self.times:
       raise ValueError(f"Time input of {t} is not ok / found in self.times!")
-
-"""
-Processing norms with time
-"""
-def get_norm_vs_time(res: Anderson | SIE, ref: Anderson | SIE, order: int = 2) -> np.ndarray[float]:
-  
-  """
-  Gets the norm (difference) as a function of time.
-  """
-  all_norms = []
-  for t in ref.times:
-    try:
-      res._time_flag(t)
-    except:
-      break
-
-    xref = ref.x[t][-1]
-    xres = res.x[t][-1]
-
-    nrm = np.linalg.norm(xres-xref, ord=order) / np.linalg.norm(xref, ord=order)
-    all_norms.append(nrm)
-  return np.array(all_norms)
-

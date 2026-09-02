@@ -275,7 +275,7 @@ class SIE:
     if self._relax_N:
       # If iidx = 0, this is a predictor calculation and we dont want to relax nuclide densities.
       if iidx != 0:
-        self.set_depl_output(self.get_relaxed_n(iidx=iidx, tidx=tidx))
+        self.set_depl_output(self._get_relaxed_n(iidx=iidx, tidx=tidx))
         self._append_N_iter(time=time, N=self.depl_output[-1]) # append the relaxed number densities
 
     fx = self.transport(model=model, chain_file=chain_file, depl_id_list=depl_id_list)
@@ -283,7 +283,7 @@ class SIE:
   
     # Relax transport using the fx iterates from transport
     if self._relax_F: # relaxation
-      x = self.get_relaxed_flux(fx=self.fx[time])
+      x = self._get_relaxed_flux(fx=self.fx[time])
     else: # no relaxation
       x = copy.deepcopy(fx) 
       
@@ -301,7 +301,7 @@ class SIE:
       
       # Relaxes the nuclide densities if applicable, sets the latest output internally as well
       if self._relax_N:
-        self.set_depl_output(self.get_relaxed_n(iidx=iidx+1, tidx=tidx))
+        self.set_depl_output(self._get_relaxed_n(iidx=iidx+1, tidx=tidx))
         self._append_N_iter(time=time, N=self.depl_output[-1]) # append the relaxed number densities
     
     return x
@@ -391,7 +391,7 @@ class SIE:
     if self._relax_N:
       self._append_N_iter(time=0, N=self.depl_output[0])
 
-  def get_relaxed_flux(self, fx: list[np.ndarray[float]]) -> np.ndarray[float]:
+  def _get_relaxed_flux(self, fx: list[np.ndarray[float]]) -> np.ndarray[float]:
     """
     Get relaxed flux from a list of fluxes using the weights.
     """
@@ -406,7 +406,7 @@ class SIE:
     new = new / np.sum(new) * norm_to
     return new
   
-  def get_relaxed_n(self, iidx: int, tidx: int):
+  def _get_relaxed_n(self, iidx: int, tidx: int):
     """
     Gets the relaxed EOS nuclide results based on previous files
 
@@ -787,9 +787,77 @@ class SIE:
       out[it] = the_mat_list
     return out
 
+  """
+  Getting x and fx by iteration and time
+  """
+  def get_x_by_iteration(self, time: float) -> list[np.ndarray[tuple[int], float]]:
+    """
+    Gets x by iteration for a given point in time
+
+    Parameters
+    ==========
+    time : float
+      the time
+    
+    Returns
+    =======
+    fx : list[np.ndarray]
+      the fx solutions for a given point in time
+    """
+    self._time_flag(t=time)
+
+    return self.x[time]
+
+  def get_x_by_time(self) -> tuple[list[float], list[np.ndarray[tuple[int], float]]]:
+    """
+    Gets last value of x as a function of time
+
+    Parameters
+    ==========
+    None
+
+    Returns
+    =======
+    time : list[float]
+      self.times
+    x : list[np.ndarray]
+
+    """
+    x = []
+    time = []
+    for t in self.times:
+      time.append(t)
+      x.append(self.x[t][-1])
+    return time, x
+
+  def get_fx_by_iteration(self, time: float) -> list[np.ndarray[tuple[int], float]]:
+    """
+    Gets fx by iteration for a given point in time
+
+    Parameters
+    ==========
+    time : float
+      the time
+    
+    Returns
+    =======
+    fx : list[np.ndarray]
+      the fx solutions for a given point in time
+    """
+    self._time_flag(t=time)
+    return self.fx[time]
+
+"""
+Free functions
+"""
 def load_SIE(file: str) -> SIE:
   """
   Returns a SIE object from a pkl file.
+
+  This will return the SIE class in the state it was saved in.
+
+  Use SIE.SIE().get_from_pkl() to return the SIE class using the
+  local version of the SIE methods.
   """
   with open(file, 'rb') as f:
     out = pkl.load(f)

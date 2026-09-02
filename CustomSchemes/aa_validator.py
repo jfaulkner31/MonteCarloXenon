@@ -8,8 +8,8 @@ Basically validates that the scheme I implemented in aa_job.py is doing the righ
 """
 Imports
 """
-from Anderson import Anderson
-from Colors import Colors, nice_grid, nice_legend
+from CustomSchemes.AA import Anderson
+from CustomSchemes.Colors import Colors, nice_grid, nice_legend
 
 import matplotlib.pyplot as plt
 import copy
@@ -36,9 +36,9 @@ def solve(t: float, solveNumber: int, file: str):
     return aa.fx[t][solveNumber-1] # return the solve number
   # Get the solve
 
-def get_MC_soln(t: float, file: str):
+def get_final_xnext(t: float, file: str):
   """
-  Gets the last x_next value from the MC run.
+  Gets the last x_next value - the final solution
   """
   aa: Anderson = Anderson().get_from_pkl(file=file)
   # Check
@@ -219,7 +219,7 @@ def validate_case(time: float, file: str, k_max: int, m: int, dpi: int = 100):
 
   # ---- Example: your f(x), but vector IC ----
   print("Computed fixed point (last x_next) = ", x_star)
-  print("Last n_next value from vector x = ", get_MC_soln(file=FILE, t=TIME))
+  print("Last n_next value from vector x = ", get_final_xnext(file=FILE, t=TIME))
   print("Iterations:", k)
   
   
@@ -234,11 +234,11 @@ def validate_case(time: float, file: str, k_max: int, m: int, dpi: int = 100):
     
 
 
-  from Colors import Colors as col
-  from Colors import nice_grid, nice_legend
+  from CustomSchemes.Colors import Colors as col
+  from CustomSchemes.Colors import nice_grid, nice_legend
   plt.figure(figsize=(5,3), dpi=dpi)
   plt.plot(x_star, 'ks--', label='validated', markersize=7, markerfacecolor='none', mew=0.5) # the last soln from the validator (x_next final)
-  plt.plot(get_MC_soln(file=FILE, t=TIME), 'rx-', label=r'MC $x_\mathrm{next}$', markersize=5, lw=0.5, mew=0.5) # the last x_next from MC
+  plt.plot(get_final_xnext(file=FILE, t=TIME), 'rx-', label=r'MC $x_\mathrm{next}$', markersize=5, lw=0.5, mew=0.5) # the last x_next from MC
   plt.plot(get_second_last_xnext(file=FILE, t=TIME), 'g+--', label=r'MC $x_\mathrm{next-1}$', markersize=5, lw=0.5, mew=0.5)
   plt.plot(get_last_fx(file=FILE, t=TIME), 'b^-', label=r'MC $f(x_\mathrm{next})$', markersize=5, lw=0.5,markerfacecolor='none', mew=0.5)
   plt.plot(alphaVec / np.sum(alphaVec) * np.sum(get_last_fx(file=FILE, t=TIME)), 
@@ -250,13 +250,13 @@ def validate_case(time: float, file: str, k_max: int, m: int, dpi: int = 100):
 
   plt.figure(figsize=(5,3), dpi=dpi)
   plt.plot( 
-    np.array(x_star)/np.array(get_MC_soln(file=FILE, t=TIME)) - 1.0,
+    np.array(x_star)/np.array(get_final_xnext(file=FILE, t=TIME)) - 1.0,
     'ks--', markerfacecolor='none', markersize=5, label='rel diff this script vs MC script'
     )
   
   theAlphaComparison = alphaVec / np.sum(alphaVec) * np.sum(get_last_fx(file=FILE, t=TIME))
   plt.plot( 
-    theAlphaComparison/np.array(get_MC_soln(file=FILE, t=TIME)) - 1.0,
+    theAlphaComparison/np.array(get_final_xnext(file=FILE, t=TIME)) - 1.0,
     'rs--', markerfacecolor='none', markersize=5, label=r'reconstructed $\alpha$ rel diff.'
     )
   
