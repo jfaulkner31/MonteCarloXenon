@@ -384,6 +384,11 @@ def get_model(do_low_fidelity: bool = False) -> openmc.Model:
   xPlu.boundary_type = 'reflective'
   xNeg.boundary_type = 'reflective'
 
+  # Make lattice outer universe (ultra thin helium)
+  the_outer_cell = openmc.Cell(fill=None, region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg))
+  lattice_outer = openmc.Universe(cells=[the_outer_cell])
+  lat3d.outer = lattice_outer
+
   # Make prism cell
   prism = openmc.Cell(fill=lat3d, region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg))
   final_universe = openmc.Universe(cells=[prism])
