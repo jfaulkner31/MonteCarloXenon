@@ -53,7 +53,7 @@ power = power_density * 366  * np.pi * fuel_r**2
 depletion_materials = depletable_mats_from_model(model=model) # get from starting model
 depl_id_list = [this.id for this in depletion_materials]
 
-# Robbins Monro related
+# Related to the anderson acceleration scheme
 fake_transport = False
 nsolves = 4 # number of transport solves/solution
 andersonOrder = 2
@@ -66,7 +66,7 @@ Path("depl_results").mkdir(parents=True, exist_ok=True)
 """Start by performing t=0 transport"""
 aa.initialize_bos()
 
-# actual transport
+# fake dummy transport
 if fake_transport:
   LATEST_FLUX = dummy_transport(N=len(depl_id_list))
 # actual transport

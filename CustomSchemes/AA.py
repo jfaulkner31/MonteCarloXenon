@@ -608,3 +608,62 @@ class Anderson():
       starting_fx_idx += 1
     return reconstructed_x
     
+  """
+  Getting x and fx by iteration and time
+  """
+  def get_x_by_iteration(self, time: float) -> list[np.ndarray[tuple[int], float]]:
+    """
+    Gets x by iteration for a given point in time
+
+    Parameters
+    ==========
+    time : float
+      the time
+    
+    Returns
+    =======
+    fx : list[np.ndarray]
+      the fx solutions for a given point in time
+    """
+    self._time_flag(t=time)
+
+    return self.x[time]
+
+  def get_x_by_time(self) -> tuple[list[float], list[np.ndarray[tuple[int], float]]]:
+    """
+    Gets last value of x as a function of time
+
+    Parameters
+    ==========
+    None
+
+    Returns
+    =======
+    time : list[float]
+      self.times
+    x : list[np.ndarray]
+
+    """
+    x = []
+    time = []
+    for t in self.times:
+      time.append(t)
+      x.append(self.x[t][-1])
+    return time, x
+
+  def get_fx_by_iteration(self, time: float) -> list[np.ndarray[tuple[int], float]]:
+    """
+    Gets fx by iteration for a given point in time
+
+    Parameters
+    ==========
+    time : float
+      the time
+    
+    Returns
+    =======
+    fx : list[np.ndarray]
+      the fx solutions for a given point in time
+    """
+    self._time_flag(t=time)
+    return self.fx[time]

@@ -13,8 +13,8 @@ from data.pwr_rei_template import UO2Material, GarbageMaterial, ZircMaterial, Wa
  get_density_curve, \
  PincellGeometry
 
-def get_model() -> openmc.Model:
-
+def get_model(do_low_fidelity: bool = False) -> openmc.Model:
+  DO_PLOT = False
   # TEMP
   temperature = 600
 
@@ -36,10 +36,11 @@ def get_model() -> openmc.Model:
   yNew = np.interp(DENSITY_X_VALUE, densCurve[:,0], densCurve[:,1])
   yAll = np.interp(xNew, densCurve[:,0], densCurve[:,1])
   densValue = yNew
-  plt.figure(figsize=(5,3))
-  plt.plot(xNew, yAll, 'ks--', markerfacecolor='white')
-  plt.plot(xNew, yNew*np.ones(len(xNew)), 'rx--', markerfacecolor='white')
-  plt.grid()
+  if DO_PLOT:
+    plt.figure(figsize=(5,3))
+    plt.plot(xNew, yAll, 'ks--', markerfacecolor='white')
+    plt.plot(xNew, yNew*np.ones(len(xNew)), 'rx--', markerfacecolor='white')
+    plt.grid()
   print(xNew)
 
 
@@ -108,6 +109,11 @@ def get_model() -> openmc.Model:
   yNeg.boundary_type = 'reflective'
   xPlu.boundary_type = 'reflective'
   xNeg.boundary_type = 'reflective'
+
+  # Make lattice outer universe (ultra thin helium)
+  the_outer_cell = openmc.Cell(fill=None, region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg))
+  lattice_outer = openmc.Universe(cells=[the_outer_cell])
+  lat3d.outer = lattice_outer
     
   # Make prism cell
   prism = openmc.Cell(fill=lat3d, region=(-xPlu & +xNeg & -yPlu & +yNeg & -zPlu & +zNeg))
@@ -120,8 +126,9 @@ def get_model() -> openmc.Model:
 
   # Plot the universe! Look at all those unique materials/cells!
   # Double check the thimbles are correctly laid out as well!
-  final_universe.plot(basis='xy', pixels=50000, origin=(0.0,0.0,cell_geom.height/2), color_by='material')
-  final_universe.plot(basis='xz', pixels=50000, origin=(0.0,0.0,cell_geom.height/2), color_by='material')
+  if DO_PLOT:
+    final_universe.plot(basis='xy', pixels=50000, origin=(0.0,0.0,cell_geom.height/2), color_by='material')
+    final_universe.plot(basis='xz', pixels=50000, origin=(0.0,0.0,cell_geom.height/2), color_by='material')
 
   """Tallies"""
   talls = []
@@ -148,7 +155,10 @@ def get_model() -> openmc.Model:
   settings.source = source
   settings.batches = 1000
   settings.inactive = 500
-  settings.particles = 100000
+  if do_low_fidelity:
+    settings.particles = 500
+  else:
+    settings.particles = 100000
   #settings.temperature['method'] = 'interpolation'
   # settings.export_to_xml()
 
