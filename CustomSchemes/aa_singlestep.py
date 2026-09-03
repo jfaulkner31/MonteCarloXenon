@@ -63,6 +63,7 @@ depl_id_list = [this.id for this in depletion_materials]
 # Related to the anderson acceleration scheme
 nsolves = 100 # number of transport solves/solution
 andersonOrder = 2
+scale_npg = 1.5
 aa = Anderson(mr=andersonOrder, tolerance=1e-15, max_solves=nsolves, dummy_transport=False)
 
 """Make the results folder"""

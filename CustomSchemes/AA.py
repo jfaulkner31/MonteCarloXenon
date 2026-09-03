@@ -17,7 +17,7 @@ openmc.deplete.pool.USE_MULTIPROCESSING=False
 # TODO: make sure that we are handliong chceks and BSO and EOS properly when appending data.
 
 class Anderson():
-  def __init__(self, mr: int = None, tolerance: float = None, max_solves: int = None, dummy_transport = False):
+  def __init__(self, mr: int = None, tolerance: float = None, max_solves: int = None, dummy_transport = False, scale_npg: float = 1):
     """
     Anderson acceleration class
 
@@ -46,6 +46,7 @@ class Anderson():
     self._fx: dict[float: list[np.ndarray]] = {} # fx is from solving the transport equation
     self._gx: dict[float: list[np.ndarray]] = {} # gx is just differences in soln's kinda
     self._k: dict[int] = {}                      # iteration k after solving. 
+    self._npg: dict[list[int]] = {}                    # number of histories (npg) used to solve each iteration at each timestep
 
     # Nuclide vector solutions
     self._gN:    dict[float: list[openmc.deplete.Results]] = {} # the N as a direct output of the depletion solution (correctors)
@@ -62,6 +63,8 @@ class Anderson():
     self.initialized = False
 
     # AA stuff:
+    self._scale_npg: float = scale_npg
+    self._original_npg: int = None
     self._mr = mr
     self._tolerance = tolerance
     self._max_solves = max_solves
@@ -142,6 +145,12 @@ class Anderson():
       " the data has been appended to the predictor data container multiple times!"
     self._pN[time] = pN
 
+  """appending npg information"""
+  def _append_npg_information(self, time: float, npg: int):
+    assert self.initialized, "Step must be initialized before we can append npg information"
+    assert isinstance(npg, int), "npg must be an int"
+    self._npg[time].append(npg)
+
   def finalize(self, time: float, x: list[np.ndarray[tuple[int], float]], fx: list[np.ndarray[tuple[int], float]], gx: list[np.ndarray[tuple[int], float]], k: int):
     """
     Finalizes results after a timestep.
@@ -197,6 +206,7 @@ class Anderson():
     self._gx[time] = []
     self._gN[time] = []
     self._k[time] = None
+    self._npg[time] = []
     self.initialized = True
 
   def dump_to_pkl(self, name: str):
@@ -224,6 +234,7 @@ class Anderson():
     self._fx = out._fx
     self._gx = out._gx
     self._k = out._k
+    self._npg = out._npg
 
     self._latest_depletion_output = out._latest_depletion_output
 
@@ -236,6 +247,9 @@ class Anderson():
 
     self._latest_alpha = out._latest_alpha
     self._latest_gamma = out._latest_gamma
+
+    self._scale_npg = out._scale_npg
+    self._original_npg = out._original_npg
     return self
 
   def get_final_tally(self, res: dict, normalize_to: float = 1.0):
@@ -329,7 +343,10 @@ class Anderson():
         self._append_time_zero_results()
     
     # Run transport and get fx for this transport solve
+    self._append_npg_information(time=time, npg=model.settings.particles) # append before solving
     fx = self.transport(model=model, chain_file=chain_file, depl_id_list=depl_id_list)
+    self._increase_npg_in_model(model=model)
+    
 
     return fx
 
@@ -350,6 +367,12 @@ class Anderson():
     Input is initial_x which is the fluxes to use for the predictor calculation
     """
     assert tidx >= 1, "The time idx for the first depletion step is always greater than 0"
+
+    # If original NPG hasnt been set yet.
+    if self._original_npg is None:
+      self._original_npg = model.settings.particles
+    else: # reset the npg in the model to the original value before we do any solving at this timestep
+      self._reset_model_npg(model=model)
     
     x = [copy.deepcopy(initial_x)]
     fx = []
@@ -667,6 +690,26 @@ class Anderson():
     """
     self._time_flag(t=time)
     return self.fx[time]
+
+
+  """
+  NPG related
+  """
+  def _set_model_npg(self, npg: int, model: openmc.Model):
+    """updates npg inline"""
+    model.settings.particles = npg
+
+  def _reset_model_npg(self, model: openmc.Model):
+    assert self._original_npg is not None, "self._original_npg must have been set!!!"
+    model.settings.particles = self._original_npg
+
+  def _increase_npg_in_model(self, model: openmc.Model):
+    """scales the npg in the model - inline modification of model object"""
+    self._scale_npg
+    npg = model.settings.particles
+    new = round(npg*self._scale_npg)
+    self._set_model_npg(npg=new, model=model)
+    
 
   """
   General functions / Other

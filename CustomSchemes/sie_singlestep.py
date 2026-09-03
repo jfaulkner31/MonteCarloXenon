@@ -61,13 +61,13 @@ Path("results").mkdir(parents=True, exist_ok=True)
 Path("depl_results").mkdir(parents=True, exist_ok=True)
 
 
-"""Start by performing t=0 transport"""
-sie.initialize_bos()
-RESULTS_TRANSPORT = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## transport w/ batch-by-batch tally tracking
-LATEST_FLUX = sie.get_final_tally(res=RESULTS_TRANSPORT, normalize_to=1.0)
-sie.set_bos_solution(x=LATEST_FLUX)
-sie.finalize_bos()
-sie.dump_to_pkl(name=f'results/sie_i{0}_t{0}.pkl')
+# """Start by performing t=0 transport"""
+# sie.initialize_bos()
+# RESULTS_TRANSPORT = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## transport w/ batch-by-batch tally tracking
+# LATEST_FLUX = sie.get_final_tally(res=RESULTS_TRANSPORT, normalize_to=1.0)
+# sie.set_bos_solution(x=LATEST_FLUX)
+# sie.finalize_bos()
+# sie.dump_to_pkl(name=f'results/sie_i{0}_t{0}.pkl')
 
 
 """fake dummy transport with a skewed flux - deplete until 300 days"""
@@ -80,20 +80,22 @@ tidx=1
 sie.deplete(iidx=iidx, tidx=tidx, x=LATEST_FLUX, depl_mats=depletion_materials, micro_xs=micro_xs, chain_file=chain_file, dt=this_dt, power=power)
 sie._append_pN_iter(time=time, pN=sie.depl_output[-1])
 sie._append_time_zero_results()
-sie.finalize()
+sie.finalize_bos()
 
-
+# Now start with a bad flux for the predictor and iterate.
+LATEST_FLUX = oscillating_transport(len(depletion_materials))
 
 """
 Now iterating through time.
 """
 the_eos_time = 300.0
 for _tidx, this_dt in enumerate(dt):
-  sie._append_x_iter(time=325.0, x=LATEST_FLUX)  
+  
   # Time
   TIME_IDX = _tidx + 2
   the_eos_time += this_dt
   sie.initialize_step(time=the_eos_time)
+  sie._append_x_iter(time=the_eos_time, x=LATEST_FLUX)  
   final_solve = False
 
   # Now iterate across solves.
