@@ -705,7 +705,6 @@ class Anderson():
 
   def _increase_npg_in_model(self, model: openmc.Model):
     """scales the npg in the model - inline modification of model object"""
-    self._scale_npg
     npg = model.settings.particles
     new = round(npg*self._scale_npg)
     self._set_model_npg(npg=new, model=model)

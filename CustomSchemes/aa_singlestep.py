@@ -63,8 +63,10 @@ depl_id_list = [this.id for this in depletion_materials]
 # Related to the anderson acceleration scheme
 nsolves = 100 # number of transport solves/solution
 andersonOrder = 2
-scale_npg = 1.5
-aa = Anderson(mr=andersonOrder, tolerance=1e-15, max_solves=nsolves, dummy_transport=False)
+scale_npg = 1.5 # how much to scale npg by at each iteration / transport solve (10000, 15000, 22500, ....)
+starting_npg = 10000 # overwrite the starting histories of the model
+aa = Anderson(mr=andersonOrder, tolerance=1e-15, max_solves=nsolves, dummy_transport=False, scale_npg=1.5)
+model.settings.particles = starting_npg
 
 """Make the results folder"""
 Path("results").mkdir(parents=True, exist_ok=True)
