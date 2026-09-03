@@ -1,5 +1,5 @@
 import CustomSchemes
-import CustomSchemes.data.pwr_rei_template as pwr
+import CustomSchemes.data.pwr_symmetric_template as pwr
 import openmc
 import openmc.deplete
 import numpy as np

@@ -1,4 +1,4 @@
-import CustomSchemes.data.pwr_rei_template as pwr
+import CustomSchemes.data.pwr_symmetric_template as pwr
 import CustomSchemes
 import openmc
 import openmc.deplete

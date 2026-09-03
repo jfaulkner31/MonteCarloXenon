@@ -43,3 +43,15 @@ def __noisy_transport(N: int, noise: float) -> np.ndarray[tuple[int], float]:
     assert this > 0, "Flux in dummy transport kernel was found to be negative or zero - this should not be possible"
   flux = flux / np.sum(flux)
   return flux
+
+def oscillating_transport(N: int) -> np.ndarray[tuple[int], float]:
+  """
+  Generates a chopped cosine thing
+  """
+  adder = 1.5 # higher number creates a flatter flux:
+  # 1.0 causes flux to be 0 at leftside
+  # 1.5 is hard
+  # 2.0 easier
+  # 3.0 easier
+  x = (np.cos(np.linspace(np.pi*1 , 2*np.pi * 1 ,N))+adder)
+  return x/np.sum(x)

@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openmc.deplete
 
-from data.pwr_rei_template import UO2Material, GarbageMaterial, ZircMaterial, WaterMaterial, \
+from CustomSchemes.data.pwr_rei_template import UO2Material, GarbageMaterial, ZircMaterial, WaterMaterial, \
  LWRControlRod, LWRPincell, \
  get_density_curve, \
  PincellGeometry
