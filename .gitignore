@@ -7,4 +7,5 @@ cramTesting.ipynb
 *.LOG
 CustomSchemes/*.pkl
 CustomSchemesAnalysis/SIE_scheme/results
+CustomSchemesAnalysis/SIE_scheme/*.xml
 openmc_aa

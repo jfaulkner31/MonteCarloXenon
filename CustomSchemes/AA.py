@@ -667,3 +667,23 @@ class Anderson():
     """
     self._time_flag(t=time)
     return self.fx[time]
+
+  """
+  General functions / Other
+  """
+  def _time_flag(self, t: float):
+    """
+    Checks time is valid
+
+    Parameters
+    ==========
+    t : float
+      the time
+    
+    Returns
+    =======
+    None
+
+    """    
+    if t not in self.times:
+      raise ValueError(f"Time input of {t} is not ok / found in self.times!")
