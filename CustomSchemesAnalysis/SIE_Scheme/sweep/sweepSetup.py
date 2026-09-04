@@ -43,7 +43,7 @@ def copy_replace_lines(filename, lines_to_search, lines_to_write, the_filename):
   dst.write_text("\n".join(new_lines) + "\n")
 
 """
-Actuall running stuff now.
+Actually running stuff now.
 """
 
 numIter = [100,100,18,12,7]

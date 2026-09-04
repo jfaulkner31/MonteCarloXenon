@@ -53,8 +53,11 @@ depletion_materials = depletable_mats_from_model(model=model) # get from startin
 depl_id_list = [this.id for this in depletion_materials]
 
 # Robbins Monro related
-nsolves = 100 # number of transport solves/solution
-starting_NPG = 100000
+STARTING_PARTICLES = None
+NSOLVES = None
+
+nsolves = NSOLVES # number of transport solves/solution
+starting_NPG = STARTING_PARTICLES
 sie = SIE(relax_N=False, relax_F=True)
 model.settings.particles = starting_NPG
 
