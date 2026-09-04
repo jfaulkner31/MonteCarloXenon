@@ -1,9 +1,9 @@
 Installation
 ============
 
-Installation: 
+Installation:
 
-to install run:
+To install run the following in the MonteCarloXenon base directory:
 
 conda create --name schemes python=3.11
 
@@ -22,7 +22,7 @@ Other
 
 1D monte carlo code with point depletion code
 
-Goal - simulate 1g monte carlo transport. 
+Goal - simulate 1g monte carlo transport.
 
 Perform CELI-SI scheme.
 

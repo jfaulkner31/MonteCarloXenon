@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 import matplotlib.pyplot as plt
 from CustomSchemes.Colors import Colors, nice_grid, nice_legend
-import logging 
+import logging
 from CustomSchemes.NuclideVectorMath import relax_nuclides_from_files
 openmc.deplete.pool.USE_MULTIPROCESSING=False
 
@@ -45,7 +45,7 @@ class Anderson():
     self._x:  dict[float: list[np.ndarray]] = {} # x is from anderson acceleration
     self._fx: dict[float: list[np.ndarray]] = {} # fx is from solving the transport equation
     self._gx: dict[float: list[np.ndarray]] = {} # gx is just differences in soln's kinda
-    self._k: dict[int] = {}                      # iteration k after solving. 
+    self._k: dict[int] = {}                      # iteration k after solving.
     self._npg: dict[list[int]] = {}                    # number of histories (npg) used to solve each iteration at each timestep
 
     # Nuclide vector solutions
@@ -165,7 +165,7 @@ class Anderson():
   def finalize_bos(self, x: np.ndarray[tuple[int], float]):
     """
     Finalizes the BOS results
-    
+
     Parameters
     ==========
     None
@@ -234,22 +234,31 @@ class Anderson():
     self._fx = out._fx
     self._gx = out._gx
     self._k = out._k
-    self._npg = out._npg
 
     self._latest_depletion_output = out._latest_depletion_output
 
     self._mr = out._mr
     self._tolerance = out._tolerance
     self._max_solves = out._max_solves
-    
+
     self._gN = out._gN
     self._pN = out._pN
 
     self._latest_alpha = out._latest_alpha
     self._latest_gamma = out._latest_gamma
 
-    self._scale_npg = out._scale_npg
-    self._original_npg = out._original_npg
+    try:
+      self._npg = out._npg
+    except:
+      self._npg = None
+    try:
+      self._scale_npg = out._scale_npg
+    except:
+      self._scale_npg = None
+    try:
+      self._original_npg = out._original_npg
+    except:
+      self._original_npg = None
     return self
 
   def get_final_tally(self, res: dict, normalize_to: float = 1.0):
@@ -257,28 +266,28 @@ class Anderson():
     Description
     ===========
     Take in results from a batch-wise transport calculation
-    
+
     Parameters
     ==========
-    res : dict 
+    res : dict
       results obtained from run_transport()
     normalize_to : float = 1.0
-      value to normalize the tally to upon output 
-    
+      value to normalize the tally to upon output
+
 
     Outputs
     =======
     out : dict
-      dictionary of tallies by generation 
+      dictionary of tallies by generation
     """
     maxx = max(list(res.keys()))
-    shape1 = np.array(res[maxx])    
+    shape1 = np.array(res[maxx])
     return shape1/np.sum(shape1) * normalize_to
 
-  def _solve_iteration(self, 
+  def _solve_iteration(self,
             x: np.ndarray, # x value to use for depletion
             tidx: int,
-            iidx: int, 
+            iidx: int,
             depl_mats: openmc.Materials,
             model: openmc.Model,
             micro_xs: list,
@@ -290,14 +299,14 @@ class Anderson():
     """
     Solves corrector + transport. Outputs the relaxed flux solution.
 
-    If no relaxation of the flux, outputs just the most recent flux guess... 
+    If no relaxation of the flux, outputs just the most recent flux guess...
     or otherwise relaxation with a factor of 1.0
 
     f(x) is the solution to the coupled problem (fluxes):
       f(x) = Transport(Corrector(x))
 
     x is the relaxed flux guess and iterates: Relax(x1, x2, ... xN)
-    
+
     Parameters
     ==========
     x : np.ndarray
@@ -331,26 +340,26 @@ class Anderson():
     # Assertations
 
     # Deplete and then interally update self._latest_depletion_output
-    self.deplete(iidx=iidx, tidx=tidx, 
-                 x=x, depl_mats=depl_mats, 
+    self.deplete(iidx=iidx, tidx=tidx,
+                 x=x, depl_mats=depl_mats,
                  micro_xs=micro_xs, chain_file=chain_file,
                  dt=dt, power=power)
-    
+
     # Append depletion solution: gN (corrector) or pN (predictor)
     if iidx==0:
       self._append_pN_iter(time=time, pN=self.depl_output[-1]) # append predictor number densities
       if tidx == 1: # append time=0 isotopics
         self._append_time_zero_results()
-    
+
     # Run transport and get fx for this transport solve
     self._append_npg_information(time=time, npg=model.settings.particles) # append before solving
     fx = self.transport(model=model, chain_file=chain_file, depl_id_list=depl_id_list)
     self._increase_npg_in_model(model=model)
-    
+
 
     return fx
 
-  def solve_step(self, 
+  def solve_step(self,
             initial_x: np.ndarray, # initial conditon for fluxes
             tidx: int,
             depl_mats: openmc.Materials,
@@ -373,7 +382,7 @@ class Anderson():
       self._original_npg = model.settings.particles
     else: # reset the npg in the model to the original value before we do any solving at this timestep
       self._reset_model_npg(model=model)
-    
+
     x = [copy.deepcopy(initial_x)]
     fx = []
     g = []
@@ -392,7 +401,7 @@ class Anderson():
     G_k = (g[1] - g[0]).reshape(d, 1)
     X_k = (x[1] - x[0]).reshape(d, 1)
 
-    breakTheLoop = False 
+    breakTheLoop = False
     k = int(2)
 
     while True:
@@ -400,7 +409,7 @@ class Anderson():
       x_next = self._solve_lst_sq(G_k=G_k, X_k=X_k, d=d, k=k, g=g, x=x, time=time)
 
       # Loop breakage
-      if breakTheLoop: 
+      if breakTheLoop:
         # append since we computed a new x_next
         x.append(x_next)
         self._set_latest_alpha(time=time, p=G_k.shape[1])
@@ -423,12 +432,12 @@ class Anderson():
 
       # Converged or finished?
       breakTheLoop = self._did_converge(gk=g[k],numFX=len(fx))
-      
+
       # Advance
       k += 1
 
   def transport(self,
-                model: openmc.Model, 
+                model: openmc.Model,
                 chain_file : str,
                 depl_id_list : list[int]) -> np.ndarray[tuple[int], float]:
     """
@@ -446,8 +455,8 @@ class Anderson():
     if not self._dummy_transport:
       from CustomSchemes.NuclideVectorMath import make_transport_material_library
       make_transport_material_library(output_name=self.depl_output, model=model, chain_file=chain_file)
-      
-      # Results from transport 
+
+      # Results from transport
       from CustomSchemes.TransportMath import run_transport, run_transport_standard
       tr_dict = run_transport_standard(model=model, power_tally_ids=depl_id_list) ## this one for res tracking...
       fx = self.get_final_tally(res=tr_dict, normalize_to=1.0)
@@ -457,7 +466,7 @@ class Anderson():
 
     return fx
 
-  def deplete(self, iidx: int, tidx : int, 
+  def deplete(self, iidx: int, tidx : int,
               x : np.ndarray[tuple[int], float],
               depl_mats: openmc.Materials,
               micro_xs: list,
@@ -465,7 +474,7 @@ class Anderson():
               dt: float,
               power: float):
     """
-    Performs depletion from BOS to EOS 
+    Performs depletion from BOS to EOS
     using the entered flux.
 
     Parameters
@@ -482,7 +491,7 @@ class Anderson():
       the xs used to deplete.
     chain_file : str
       the chain file used to deplete
-    power : float 
+    power : float
       the power used to normalize the fluxes
     dt : float
       the timestep size (days)
@@ -498,18 +507,18 @@ class Anderson():
     """
     # Name the depletion output
     depl_output_name = self._get_depletion_output_name(iidx=iidx, tidx=tidx)
-    
+
     # Perform depletion until EOS
     depl_flux = copy.deepcopy(x)
     op = openmc.deplete.IndependentOperator(depl_mats, depl_flux, micro_xs, chain_file=chain_file)
     openmc.deplete.PredictorIntegrator(op, timesteps=[dt], power=power, timestep_units='d').integrate(path=depl_output_name)
-    
+
     # Update the latest depletion output information internally
     self.set_depl_output(openmc.deplete.Results(depl_output_name))
 
   def _append_time_zero_results(self):
     """
-    Appends time=0 results 
+    Appends time=0 results
     in every category.
     """
     self._append_pN_iter(time=0, pN=self.depl_output[0])
@@ -542,9 +551,9 @@ class Anderson():
     return X_k, G_k
 
   def _set_latest_gamma(self, time: float, gamma_k: np.ndarray):
-    self._latest_gamma[time] = gamma_k 
+    self._latest_gamma[time] = gamma_k
 
-  def _set_latest_alpha(self, time: float, p: int): 
+  def _set_latest_alpha(self, time: float, p: int):
     alpha = self._compute_alpha(time=time, p=p)
     self._latest_alpha[time] = alpha
 
@@ -559,7 +568,7 @@ class Anderson():
     # Get intermediate x_next
     x_next = x[k-1] + g[k-1] - ((X_k + G_k) @ gamma_k).reshape(d)
     return copy.deepcopy(x_next)
-  
+
   def _get_depletion_output_name(self, iidx: int, tidx: int) -> str:
     """
     Gets depletion output name
@@ -578,7 +587,7 @@ class Anderson():
 
     """
     # PREDICTOR: depl_step_s{TIME_IDX+1}_i{0}.h5 # made to align logically with the transport grid
-    depl_output_name = f"depl_results/depl_step_s{tidx}_i{iidx}.h5" 
+    depl_output_name = f"depl_results/depl_step_s{tidx}_i{iidx}.h5"
     return depl_output_name
 
   def _compute_alpha(self, time: float, p: int = None):
@@ -630,7 +639,7 @@ class Anderson():
       reconstructed_x += self.fx[time][starting_fx_idx] * a
       starting_fx_idx += 1
     return reconstructed_x
-    
+
   """
   Getting x and fx by iteration and time
   """
@@ -642,7 +651,7 @@ class Anderson():
     ==========
     time : float
       the time
-    
+
     Returns
     =======
     fx : list[np.ndarray]
@@ -682,7 +691,7 @@ class Anderson():
     ==========
     time : float
       the time
-    
+
     Returns
     =======
     fx : list[np.ndarray]
@@ -708,7 +717,7 @@ class Anderson():
     npg = model.settings.particles
     new = round(npg*self._scale_npg)
     self._set_model_npg(npg=new, model=model)
-    
+
 
   """
   General functions / Other
@@ -721,11 +730,11 @@ class Anderson():
     ==========
     t : float
       the time
-    
+
     Returns
     =======
     None
 
-    """    
+    """
     if t not in self.times:
       raise ValueError(f"Time input of {t} is not ok / found in self.times!")
