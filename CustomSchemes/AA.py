@@ -50,7 +50,7 @@ class Anderson():
 
     # Nuclide vector solutions
     self._gN:    dict[float: list[openmc.deplete.Results]] = {} # the N as a direct output of the depletion solution (correctors)
-    self._pN:    dict[float: list[openmc.deplete.REsults]] = {} # the N that are used as predictor N
+    self._pN:    dict[float: list[openmc.deplete.Results]] = {} # the N that are used as predictor N
 
     # Plotting and analysis settings for consistency
     self._colors = [Colors.colors()+Colors.colors2()][0]*2

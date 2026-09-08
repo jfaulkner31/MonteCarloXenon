@@ -77,7 +77,7 @@ nsolves = THE_NUMBER_OF_SOLVES # number of transport solves/solution
 andersonOrder = THE_ANDERSON_ORDER
 scale_npg = THE_SCALE_NPG # how much to scale npg by at each iteration / transport solve (10000, 15000, 22500, ....)
 starting_npg = THE_STARTING_NPG # overwrite the starting histories of the model
-aa = Anderson(mr=andersonOrder, tolerance=1e-15, max_solves=nsolves, dummy_transport=False, scale_npg=1.5)
+aa = Anderson(mr=andersonOrder, tolerance=1e-15, max_solves=nsolves, dummy_transport=False, scale_npg=scale_npg)
 model.settings.particles = starting_npg
 
 """Make the results folder"""

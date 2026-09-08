@@ -19,6 +19,22 @@ def remove_folders():
         folder_name = f"aa{the_m}_f{the_f}_s{the_sim_num+1}_npg{the_npg}"
         shutil.rmtree(folder_name)
 
+def remove_folders_except_15():
+  numIter = [100,100,12,7]
+  m = [1,2,3,4,5,6]
+  f = [1,1,2.0,4.0]
+  n = [100000, 10000, 10000, 10000] # npg
+  sims = 20 
+
+  for idx, _ in enumerate(numIter):
+    the_num_iter = numIter[idx]
+    the_f = f[idx]
+    the_npg = n[idx]
+    for the_m in m:
+      for the_sim_num in range(sims):
+        folder_name = f"aa{the_m}_f{the_f}_s{the_sim_num+1}_npg{the_npg}"
+        shutil.rmtree(folder_name)
+
 def copy_replace_lines(filename, lines_to_search, lines_to_write, the_filename):
   src = Path(filename)
   dst = Path(the_filename)
@@ -59,6 +75,10 @@ for idx, _ in enumerate(numIter):
   for the_m in m:
     for the_sim_num in range(sims):
       folder_name = f"aa{the_m}_f{the_f}_s{the_sim_num+1}_npg{the_npg}"
+
+      # If it exists, continue to the next part of the loop
+      if Path(folder_name).exists():
+        continue
 
       # Make the directory
       Path(folder_name).mkdir(parents=True, exist_ok=True)
