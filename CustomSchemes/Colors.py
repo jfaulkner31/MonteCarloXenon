@@ -36,3 +36,6 @@ def frameless_legend(loc: str = 'upper left', **kwargs):
 
 def nice_legend(**kwargs):
   plt.legend(edgecolor='black', facecolor=Colors.manilla(), **kwargs)
+  
+def nice_ax_legend(ax, **kwargs):
+  ax.legend(edgecolor='black', facecolor=Colors.manilla(), **kwargs)
