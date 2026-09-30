@@ -1,4 +1,5 @@
 # pixi environments
+*.pyc
 .pixi/*
 !.pixi/config.toml
 pixi*
